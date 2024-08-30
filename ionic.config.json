@@ -1,0 +1,7 @@
+{
+  "name": "westlingo",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
