@@ -11,6 +11,212 @@ const routes: Routes = [
     redirectTo: 'home',
     pathMatch: 'full'
   },
+  {
+    path: 'login',
+    loadChildren: () => import('./pages/login/login.module').then( m => m.LoginPageModule)
+  },
+  {
+    path: 'register',
+    loadChildren: () => import('./pages/register/register.module').then( m => m.RegisterPageModule)
+  },
+  {
+    path: 'nivel-uno',
+    loadChildren: () => import('./pages/nivel-uno/nivel-uno.module').then( m => m.NivelUnoPageModule)
+  },
+  {
+    path: 'settings',
+    loadChildren: () => import('./pages/settings/settings.module').then( m => m.SettingsPageModule)
+  },
+  {
+    path: 'nivel-uno.1',
+    loadChildren: () => import('./pages/nivel-uno.1/nivel-uno.1.module').then( m => m.NivelUno1PageModule)
+  },
+  {
+    path: 'nivel-uno.2',
+    loadChildren: () => import('./pages/nivel-uno.2/nivel-uno.2.module').then( m => m.NivelUno2PageModule)
+  },
+  {
+    path: 'nivel-uno.3',
+    loadChildren: () => import('./pages/nivel-uno.3/nivel-uno.3.module').then( m => m.NivelUno3PageModule)
+  },
+  {
+    path: 'nivel-uno.4',
+    loadChildren: () => import('./pages/nivel-uno.4/nivel-uno.4.module').then( m => m.NivelUno4PageModule)
+  },
+  {
+    path: 'nivel-uno.5',
+    loadChildren: () => import('./pages/nivel-uno.5/nivel-uno.5.module').then( m => m.NivelUno5PageModule)
+  },
+  {
+    path: 'nivel-uno.6',
+    loadChildren: () => import('./pages/nivel-uno.6/nivel-uno.6.module').then( m => m.NivelUno6PageModule)
+  },
+  {
+    path: 'nivel-uno.7',
+    loadChildren: () => import('./pages/nivel-uno.7/nivel-uno.7.module').then( m => m.NivelUno7PageModule)
+  },
+  {
+    path: 'nivel-uno.8',
+    loadChildren: () => import('./pages/nivel-uno.8/nivel-uno.8.module').then( m => m.NivelUno8PageModule)
+  },
+  
+  {
+    path: 'nivel-dos',
+    loadChildren: () => import('./pages/nivel-dos/nivel-dos.module').then( m => m.NivelDosPageModule)
+  },
+  {
+    path: 'nivel-dos.1',
+    loadChildren: () => import('./pages/nivel-dos.1/nivel-dos.1.module').then( m => m.NivelDos1PageModule)
+  },
+  {
+    path: 'nivel-dos.2',
+    loadChildren: () => import('./pages/nivel-dos.2/nivel-dos.2.module').then( m => m.NivelDos2PageModule)
+  },
+  {
+    path: 'nivel-dos.3',
+    loadChildren: () => import('./pages/nivel-dos.3/nivel-dos.3.module').then( m => m.NivelDos3PageModule)
+  },
+  {
+    path: 'nivel-dos.4',
+    loadChildren: () => import('./pages/nivel-dos.4/nivel-dos.4.module').then( m => m.NivelDos4PageModule)
+  },
+  {
+    path: 'nivel-dos.5',
+    loadChildren: () => import('./pages/nivel-dos.5/nivel-dos.5.module').then( m => m.NivelDos5PageModule)
+  },
+  {
+    path: 'nivel-dos.6',
+    loadChildren: () => import('./pages/nivel-dos.6/nivel-dos.6.module').then( m => m.NivelDos6PageModule)
+  },
+  {
+    path: 'nivel-dos.7',
+    loadChildren: () => import('./pages/nivel-dos.7/nivel-dos.7.module').then( m => m.NivelDos7PageModule)
+  },
+  {
+    path: 'nivel-dos.8',
+    loadChildren: () => import('./pages/nivel-dos.8/nivel-dos.8.module').then( m => m.NivelDos8PageModule)
+  },
+  {
+    path: 'user-management',
+    loadChildren: () => import('./pages/user-management/user-management.module').then( m => m.UserManagementPageModule)
+  },
+  
+  {
+    path: 'nivel-tres',
+    loadChildren: () => import('./pages/nivel-tres/nivel-tres.module').then( m => m.NivelTresPageModule)
+  },
+  {
+    path: 'nivel-tres.1',
+    loadChildren: () => import('./pages/nivel-tres.1/nivel-tres.1.module').then( m => m.NivelTres1PageModule)
+  },
+  {
+    path: 'nivel-tres.2',
+    loadChildren: () => import('./pages/nivel-tres.2/nivel-tres.2.module').then( m => m.NivelTres2PageModule)
+  },
+  {
+    path: 'nivel-tres.3',
+    loadChildren: () => import('./pages/nivel-tres.3/nivel-tres.3.module').then( m => m.NivelTres3PageModule)
+  },
+  {
+    path: 'nivel-tres.4',
+    loadChildren: () => import('./pages/nivel-tres.4/nivel-tres.4.module').then( m => m.NivelTres4PageModule)
+  },
+  {
+    path: 'nivel-tres.5',
+    loadChildren: () => import('./pages/nivel-tres.5/nivel-tres.5.module').then( m => m.NivelTres5PageModule)
+  },
+  {
+    path: 'nivel-tres.6',
+    loadChildren: () => import('./pages/nivel-tres.6/nivel-tres.6.module').then( m => m.NivelTres6PageModule)
+  },
+  {
+    path: 'nivel-tres.7',
+    loadChildren: () => import('./pages/nivel-tres.7/nivel-tres.7.module').then( m => m.NivelTres7PageModule)
+  },
+  {
+    path: 'nivel-tres.8',
+    loadChildren: () => import('./pages/nivel-tres.8/nivel-tres.8.module').then( m => m.NivelTres8PageModule)
+  },
+  {
+    path: 'nivel-cuatro',
+    loadChildren: () => import('./pages/nivel-cuatro/nivel-cuatro.module').then( m => m.NivelCuatroPageModule)
+  },
+  {
+    path: 'nivel-cuatro.1',
+    loadChildren: () => import('./pages/nivel-cuatro.1/nivel-cuatro.1.module').then( m => m.NivelCuatro1PageModule)
+  },
+  {
+    path: 'nivel-cuatro.2',
+    loadChildren: () => import('./pages/nivel-cuatro.2/nivel-cuatro.2.module').then( m => m.NivelCuatro2PageModule)
+  },
+  {
+    path: 'nivel-cuatro.3',
+    loadChildren: () => import('./pages/nivel-cuatro.3/nivel-cuatro.3.module').then( m => m.NivelCuatro3PageModule)
+  },
+  {
+    path: 'nivel-cuatro.4',
+    loadChildren: () => import('./pages/nivel-cuatro.4/nivel-cuatro.4.module').then( m => m.NivelCuatro4PageModule)
+  },
+  {
+    path: 'nivel-cuatro.5',
+    loadChildren: () => import('./pages/nivel-cuatro.5/nivel-cuatro.5.module').then( m => m.NivelCuatro5PageModule)
+  },
+  {
+    path: 'nivel-cuatro.6',
+    loadChildren: () => import('./pages/nivel-cuatro.6/nivel-cuatro.6.module').then( m => m.NivelCuatro6PageModule)
+  },
+  {
+    path: 'nivel-cuatro.7',
+    loadChildren: () => import('./pages/nivel-cuatro.7/nivel-cuatro.7.module').then( m => m.NivelCuatro7PageModule)
+  },
+  {
+    path: 'nivel-cuatro.8',
+    loadChildren: () => import('./pages/nivel-cuatro.8/nivel-cuatro.8.module').then( m => m.NivelCuatro8PageModule)
+  },
+  {
+    path: 'nivel-cinco',
+    loadChildren: () => import('./pages/nivel-cinco/nivel-cinco.module').then( m => m.NivelCincoPageModule)
+  },
+  {
+    path: 'nivel-cinco.1',
+    loadChildren: () => import('./pages/nivel-cinco.1/nivel-cinco.1.module').then( m => m.NivelCinco1PageModule)
+  },
+  {
+    path: 'nivel-cinco.2',
+    loadChildren: () => import('./pages/nivel-cinco.2/nivel-cinco.2.module').then( m => m.NivelCinco2PageModule)
+  },
+  {
+    path: 'nivel-cinco.3',
+    loadChildren: () => import('./pages/nivel-cinco.3/nivel-cinco.3.module').then( m => m.NivelCinco3PageModule)
+  },
+  {
+    path: 'nivel-cinco.4',
+    loadChildren: () => import('./pages/nivel-cinco.4/nivel-cinco.4.module').then( m => m.NivelCinco4PageModule)
+  },
+  {
+    path: 'nivel-cinco.5',
+    loadChildren: () => import('./pages/nivel-cinco.5/nivel-cinco.5.module').then( m => m.NivelCinco5PageModule)
+  },
+  {
+    path: 'nivel-cinco.6',
+    loadChildren: () => import('./pages/nivel-cinco.6/nivel-cinco.6.module').then( m => m.NivelCinco6PageModule)
+  },
+  {
+    path: 'nivel-cinco.7',
+    loadChildren: () => import('./pages/nivel-cinco.7/nivel-cinco.7.module').then( m => m.NivelCinco7PageModule)
+  },
+  {
+    path: 'nivel-cinco.8',
+    loadChildren: () => import('./pages/nivel-cinco.8/nivel-cinco.8.module').then( m => m.NivelCinco8PageModule)
+  },
+  {
+    path: 'recuperar',
+    loadChildren: () => import('./pages/recuperar/recuperar.module').then( m => m.RecuperarPageModule)
+  },
+  {
+    path: '**',
+    loadChildren: () => import('./pages/notfound/notfound.module').then( m => m.NotfoundPageModule)
+  },
 ];
 
 @NgModule({

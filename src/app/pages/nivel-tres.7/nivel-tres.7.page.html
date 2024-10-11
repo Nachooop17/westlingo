@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Nivel Tres</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-progress-bar [value]="progress"></ion-progress-bar>
+
+  <div class="options-container">
+    <ion-item (click)="verificarRespuesta('A')" class="top-left">
+      <div class="image-container">
+        <img src="assets/img/nivel-tres-5-a.png" alt="Opción A">
+      </div>
+    </ion-item>
+    <ion-item (click)="verificarRespuesta('B')" class="top-right">
+      <div class="image-container">
+        <img src="assets/img/nivel-tres-5-b.png" alt="Opción B">
+      </div>
+    </ion-item>
+    <ion-item (click)="verificarRespuesta('C')" class="bottom-left">
+      <div class="image-container">
+        <img src="assets/img/nivel-tres-5-c.png" alt="Opción C">
+      </div>
+    </ion-item>
+    <ion-item (click)="verificarRespuesta('D')" class="bottom-right">
+      <div class="image-container">
+        <img src="assets/img/nivel-tres-5-d.png" alt="Opción D">
+      </div>
+    </ion-item>
+  </div>
+</ion-content>          

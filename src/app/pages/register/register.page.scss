@@ -1,0 +1,59 @@
+ion-content {
+    display: flex;
+    justify-content: center; /* Centrar horizontalmente */
+    align-items: flex-start; /* Alinear al inicio (parte superior) */
+    min-height: 100vh; /* Asegúrate de que ocupe toda la altura */
+    background-color: #252530; /* Color de fondo suave */
+  }
+  
+  .form-container {
+    width: 90%; /* Ancho del formulario */
+    max-width: 400px; /* Máximo ancho para pantallas grandes */
+    margin-top: 40px; /* Espaciado superior para bajar el formulario */
+    margin-left: 20px;
+    margin-right: 20px;
+    background: #161e2b; /* Fondo blanco para el contenedor */
+    border-radius: 12px; /* Bordes redondeados */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra sutil para dar profundidad */
+    padding: 20px; /* Espaciado interno */
+  }
+  
+  .logo {
+    display: block; /* Para que ocupe todo el ancho disponible */
+    margin: 0 auto 20px; /* Centrar y añadir espaciado debajo del logo */
+    max-width: 80%; /* Asegúrate de que el logo no sea demasiado grande */
+    height: auto; /* Mantener la proporción */
+    border-radius: 50%; /* Hacer la imagen redondeada */
+  }
+  
+  ion-item {
+    margin-bottom: 15px; /* Espaciado entre los elementos */
+  }
+  
+  ion-button {
+    background-color: #333; /* Gris oscuro para el botón */
+    color: #ffffff; /* Texto blanco */
+    border-radius: 20px; /* Bordes redondeados */
+    transition: background-color 0.3s; /* Transición suave */
+  }
+  
+  ion-button:hover {
+    background-color: #555; /* Color más claro al pasar el ratón */
+  }
+  
+  .login-prompt {
+    margin-top: 20px; /* Espaciado superior */
+    font-size: 16px; /* Tamaño de fuente */
+    color: #ffffff; /* Color gris para el texto */
+    text-align: center; /* Centrar el texto */
+  }
+  
+  .login-link {
+    color: #007bff; /* Color azul para el enlace */
+    text-decoration: underline; /* Subrayar el texto */
+  }
+  
+  .login-link:hover {
+    color: #0056b3; /* Color más oscuro al pasar el ratón */
+  }
+  
