@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Gestión de Usuarios</ion-title>
+    <ion-title>Gestión de Usuarios y Niveles</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -13,6 +13,18 @@
       <ion-label>
         <h2>{{ usuario.nombre }}</h2>
         <p>{{ usuario.email }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <div *ngIf="niveles.length === 0" class="no-niveles">
+    <p>No hay niveles disponibles.</p>
+  </div>
+  <ion-list *ngIf="niveles.length > 0">
+    <ion-item *ngFor="let nivel of niveles">
+      <ion-label>
+        <h2>{{ nivel.nombre }}</h2>
+        <p>Total de Subniveles: {{ nivel.total_subniveles }}</p>
       </ion-label>
     </ion-item>
   </ion-list>

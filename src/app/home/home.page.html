@@ -1,97 +1,13 @@
-<div class="ion-page" id="main-content">
-  <ion-content class="ion-padding">
-    <ion-list>
-      <br>
-      <br>
-      <ion-card color="secondary" [routerLink]="['/nivel-uno']" class="level-card">
-        <ion-card-header>
-          <ion-card-title>Nivel 1</ion-card-title>
-          <ion-card-subtitle>Básico</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-icon name="lock-open-outline" slot="end"></ion-icon>
-        </ion-card-content>
-      </ion-card>
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Niveles</ion-title>
+  </ion-toolbar>
+</ion-header>
 
-      <ion-card color="secondary" [routerLink]="['/nivel-dos']" class="level-card">
-        <ion-card-header>
-          <ion-card-title>Nivel 2</ion-card-title>
-          <ion-card-subtitle>Básico</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-icon name="lock-closed-outline" slot="end"></ion-icon>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card color="secondary" [routerLink]="['/nivel-tres']"class="level-card">
-        <ion-card-header>
-          <ion-card-title>Nivel 3</ion-card-title>
-          <ion-card-subtitle>Básico</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-icon name="lock-closed-outline" slot="end"></ion-icon>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card color="success" [routerLink]="['/nivel-cuatro']" class="level-card">
-        <ion-card-header>
-          <ion-card-title>Nivel 4</ion-card-title>
-          <ion-card-subtitle>Medio</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-icon name="lock-closed-outline" slot="end"></ion-icon>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card color="success" [routerLink]="['/nivel-cinco']"class="level-card">
-        <ion-card-header>
-          <ion-card-title>Nivel 5</ion-card-title>
-          <ion-card-subtitle>Medio</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-icon name="lock-closed-outline" slot="end"></ion-icon>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card color="success" class="level-card">
-        <ion-card-header>
-          <ion-card-title>Nivel 6</ion-card-title>
-          <ion-card-subtitle>Medio</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-icon name="lock-closed-outline" slot="end"></ion-icon>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card color="tertiary" class="level-card">
-        <ion-card-header>
-          <ion-card-title>Nivel 7</ion-card-title>
-          <ion-card-subtitle>Avanzado</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-icon name="lock-closed-outline" slot="end"></ion-icon>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card color="tertiary" class="level-card">
-        <ion-card-header>
-          <ion-card-title>Nivel 8</ion-card-title>
-          <ion-card-subtitle>Avanzado</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-icon name="lock-closed-outline" slot="end"></ion-icon>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card color="tertiary" class="level-card">
-        <ion-card-header>
-          <ion-card-title>Nivel 9</ion-card-title>
-          <ion-card-subtitle>Avanzado</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-icon name="lock-closed-outline" slot="end"></ion-icon>
-        </ion-card-content>
-      </ion-card>
-    </ion-list>
-  </ion-content>
-</div>
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let nivel of niveles">
+      {{ nivel.nombre }} - Total Subniveles: {{ nivel.total_subniveles }}
+    </ion-item>
+  </ion-list>
+</ion-content>
