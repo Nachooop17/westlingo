@@ -1,53 +1,91 @@
-import { Component } from '@angular/core';
-import { NavController, AlertController } from '@ionic/angular';
+import { Component, OnInit } from '@angular/core';
+import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { UserService } from '@services/database.service'; // Importar UserService
+import { Subnivel } from '@services/subniveles'; // Importar Subnivel
 
 @Component({
   selector: 'app-nivel-uno-1',
   templateUrl: './nivel-uno.1.page.html',
   styleUrls: ['./nivel-uno.1.page.scss'],
 })
-export class NivelUno1Page {
+export class NivelUno1Page implements OnInit {
   public progress = 0;
   private totalLevels = 8;
   private correctAnswers = 0;
+  private idusuario: number = 0;
+  public subniveles: Subnivel[] = []; // Almacenar subniveles
+  private idnivel = 1; // Nivel actual
 
-  constructor(private router: Router, private alertController: AlertController) {}
+  constructor(
+    private router: Router, 
+    private alertController: AlertController, 
+    private userService: UserService // Inyectar UserService
+  ) {}
 
   ngOnInit() {
-    // Recuperar progreso almacenado al iniciar la página
-    const storedProgress = localStorage.getItem('progress');
-    if (storedProgress) {
-      this.progress = parseFloat(storedProgress);
-      this.correctAnswers = Math.floor(this.progress * this.totalLevels);
+    this.idusuario = Number(localStorage.getItem('userId'));
+    if (!this.idusuario) {
+        alert('No se ha encontrado un usuario logeado');
+        this.router.navigate(['/login']);
+        return;
     }
-  }
 
-  async handleCorrectAnswer() {
-    this.correctAnswers++;
-    this.progress = this.correctAnswers / this.totalLevels;
+    // Obtener subniveles
+    this.userService.getSubniveles(this.idnivel).then(subniveles => {
+        this.subniveles = subniveles;
+    });
 
-    // Guardar progreso en localStorage
-    localStorage.setItem('progress', this.progress.toString());
-    this.router.navigate(['/nivel-uno.2']);
+    // Recuperar el progreso global del nivel
+    this.userService.getProgreso(this.idusuario).then(progresos => {
+        const progresoNivel = progresos.filter(p => p.idnivel === this.idnivel);
+        if (progresoNivel.length > 0) {
+            // Contar los subniveles completados
+            const completados = progresoNivel.filter(p => p.completado).length;
+            this.correctAnswers = completados;
+            this.progress = (this.correctAnswers / this.totalLevels); // Debe estar entre 0 y 1
+            console.log(`Progreso cargado: ${this.progress}`);
+        }
+    });
+}
 
-    if (this.correctAnswers >= this.totalLevels) {
-      this.correctAnswers = 0; // Reiniciar el contador de respuestas correctas
-      this.progress = 0; // Reiniciar la barra de progreso
 
-      // Guardar el progreso reiniciado
-      localStorage.setItem('progress', this.progress.toString());
+  
 
-      const alert = await this.alertController.create({
-        header: '¡Felicidades!',
-        message: '¡Has completado el nivel uno!',
-        buttons: ['OK']
-      });
-      await alert.present();
-      this.router.navigate(['/home']);
+async handleCorrectAnswer(idsubnivel: number) {
+  const subnivel = this.subniveles.find(s => s.idsubnivel === idsubnivel);
+
+  if (subnivel && !subnivel.completado) {
+      this.correctAnswers++;
+      this.progress = this.correctAnswers / this.totalLevels; // Calcular progreso
+
+      console.log(`Respuesta correcta: ${this.correctAnswers}/${this.totalLevels}, Progreso: ${this.progress}`);
+
+      // Actualizar progreso en la base de datos
+      await this.userService.actualizarProgreso(this.idusuario, this.idnivel, idsubnivel, this.progress, true);
+  
+      if (this.correctAnswers >= this.totalLevels) {
+        // Desbloquear el siguiente nivel si todos los subniveles están completos
+        await this.userService.desbloquearSiguienteNivel(this.idusuario, this.idnivel);
+  
+        const alert = await this.alertController.create({
+          header: '¡Felicidades!',
+          message: '¡Has completado el nivel uno!',
+          buttons: ['OK']
+        });
+        await alert.present();
+        this.router.navigate(['/home']);
+      } else {
+        // Navegar al siguiente subnivel
+        const nextSubnivel = `nivel-uno.${this.correctAnswers + 1}`;
+        this.router.navigate([`/${nextSubnivel}`]);
+      }
     }
-  }
+}
 
+  
+     
+  
   async handleIncorrectAnswer() {
     const alert = await this.alertController.create({
       header: 'Respuesta Incorrecta',

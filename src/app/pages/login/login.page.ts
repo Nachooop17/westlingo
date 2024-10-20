@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from '@services/database.service';
 import { AlertController } from '@ionic/angular';
+import { Usuario } from '@services/users';
 
 @Component({
   selector: 'app-login',
@@ -22,9 +23,12 @@ export class LoginPage {
 
   async onLogin() {
     // Llama a la función que verifica las credenciales
-    const isAuthenticated = await this.userService.verificarUsuario(this.loginData.email, this.loginData.password);
+    const usuario = await this.userService.verificarUsuario(this.loginData.email, this.loginData.password);
 
-    if (isAuthenticated) {
+    if (usuario) {
+      // Guardar el ID del usuario en localStorage
+      localStorage.setItem('userId', usuario.idusuario.toString());
+      
       // Redirige a la página principal
       this.router.navigate(['/home']);
     } else {

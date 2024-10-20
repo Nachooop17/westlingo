@@ -1,0 +1,20 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Nivel Siete</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-progress-bar [value]="progress"></ion-progress-bar>
+  <div class="image-container">
+    <img src="assets/img/nivel-siete-2.png" alt="Seña" style="width: 100%; height: auto;">
+  </div>
+  <div class="text-container">
+    <ion-label>¿Qué palabra representa esta seña?</ion-label>
+  </div>
+  <ion-item>
+    <ion-label position="floating">Escribe tu respuesta</ion-label>
+    <ion-input type="text" [(ngModel)]="userAnswer"></ion-input>
+  </ion-item>
+  <ion-button expand="block" color="primary" (click)="checkAnswer()">Enviar Respuesta</ion-button>
+</ion-content>

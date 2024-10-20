@@ -1,0 +1,34 @@
+.image-container {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .image-container img {
+    max-width: 70%; /* Ajusta esto según tu diseño */
+    height: auto;
+    border-radius: 10px; /* Bordes redondeados para la imagen */
+  }
+  
+  .button-container {
+    margin-top: 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Espacio entre botones */
+    padding: 0 10px;
+}
+ion-progress-bar {
+  margin: 20px 0;
+  height: 20px;
+  border-radius: 10px;
+  --background: #e0e0e0;
+  --background-activated: #007bff; // Color azul para el progreso
+}
+
+  
+  .ion-button {
+    --border-radius: 20px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    font-size: 18px; /* Ajusta el tamaño de la fuente */
+  }
+  

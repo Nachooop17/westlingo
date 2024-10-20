@@ -5,14 +5,15 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <!-- Ajustar el valor de la barra de progreso -->
   <ion-progress-bar [value]="progress"></ion-progress-bar>
 
   <div class="image-container">
     <img src="assets/img/nivel-uno-1.png" alt="Imagen del Nivel">
   </div>
-
   <div class="button-container">
-    <ion-button expand="block" color="secondary" (click)="handleCorrectAnswer()">HOLA</ion-button>
+    <!-- Añade el argumento '1' representando el idsubnivel -->
+    <ion-button expand="block" color="secondary" (click)="handleCorrectAnswer(1)">HOLA</ion-button>
     <ion-button expand="block" color="secondary" (click)="handleIncorrectAnswer()">GRACIAS</ion-button>
     <ion-button expand="block" color="secondary" (click)="handleIncorrectAnswer()">CHAO</ion-button>
     <ion-button expand="block" color="secondary" (click)="handleIncorrectAnswer()">DE NADA</ion-button>

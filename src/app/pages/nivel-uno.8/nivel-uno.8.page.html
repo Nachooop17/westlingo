@@ -1,20 +1,18 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Nivel Uno</ion-title>
+    <ion-title>Nivel Ocho</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
   <ion-progress-bar [value]="progress"></ion-progress-bar>
-
   <div class="image-container">
     <img src="assets/img/nivel-uno-8.png" alt="Imagen del Nivel">
   </div>
-
   <div class="button-container">
     <ion-button expand="block" color="secondary" (click)="handleIncorrectAnswer()">SALTAR</ion-button>
     <ion-button expand="block" color="secondary" (click)="handleIncorrectAnswer()">GIRAR</ion-button>
-    <ion-button expand="block" color="secondary" (click)="handleCorrectAnswer()">EMPANADA</ion-button>
+    <ion-button expand="block" color="secondary" (click)="handleCorrectAnswer(8)">EMPANADA</ion-button>
     <ion-button expand="block" color="secondary" (click)="handleIncorrectAnswer()">DE NADA</ion-button>
   </div>
 </ion-content>

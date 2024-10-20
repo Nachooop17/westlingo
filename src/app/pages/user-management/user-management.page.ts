@@ -13,11 +13,14 @@ export class UserManagementPage implements OnInit {
   niveles: Nivel[] = []; // Variable para niveles
 
   constructor(private userService: UserService) {}
-
-  ngOnInit() {
-    this.loadUsuarios();
-    this.loadNiveles(); // Cargar niveles al iniciar
+  ngOnInit(): void {
+    throw new Error('Method not implemented.');
   }
+
+  //ngOnInit() {
+  //  this.loadUsuarios();
+  //  this.loadNiveles(); // Cargar niveles al iniciar
+  //}
 
   loadUsuarios() {
     this.userService.fetchUsuarios().subscribe((data: Usuario[]) => {
@@ -25,11 +28,11 @@ export class UserManagementPage implements OnInit {
     });
   }
 
-  loadNiveles() {
-    this.userService.getNiveles().then(niveles => {
-      this.niveles = niveles; // Almacena los niveles en una propiedad del componente
-    });
-  }
+  //loadNiveles() {
+  //  this.userService.getNiveles().then(niveles => {
+  //    this.niveles = niveles; // Almacena los niveles en una propiedad del componente
+  //  });
+  //}
 
   eliminarUsuario(id: number) {
     this.userService.eliminarUsuario(id);

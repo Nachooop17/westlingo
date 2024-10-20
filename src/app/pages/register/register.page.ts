@@ -46,8 +46,15 @@ export class RegisterPage {
 
     if (form.valid) {
       try {
-        await this.userService.insertarUsuario(this.name, this.email, this.password);
-        await this.showAlert('Registro exitoso', 'Usuario registrado correctamente');
+        const usuario = await this.userService.insertarUsuario(this.name, this.email, this.password);
+        if (usuario) {
+          localStorage.setItem('userId', usuario.idusuario.toString());
+          await this.showAlert('Registro exitoso', 'Usuario registrado correctamente');
+          // Redirigir a la página principal
+          // Se necesita importar Router y añadir redirección a HomePage
+        } else {
+          throw new Error('No se pudo registrar el usuario');
+        }
       } catch (error) {
         await this.showAlert('Error', 'Error al registrar el usuario');
       }
@@ -59,7 +66,7 @@ export class RegisterPage {
     const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
     return emailPattern.test(email);
   }
-   
+
   // Función para validar el formato de la contraseña
   isValidPassword(password: string): boolean {
     const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{4,10}$/;

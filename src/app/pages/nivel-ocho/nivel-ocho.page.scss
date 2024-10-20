@@ -1,0 +1,66 @@
+.button-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .button-card {
+    display: flex; /* Activa flexbox */
+    justify-content: center; /* Centra horizontalmente */
+    align-items: center; /* Centra verticalmente */
+    text-align: center; /* Asegura que el texto esté centrado */
+    width: 50%; /* Mantiene el ancho original */
+    max-width: 300px; /* Ajusta el tamaño máximo según sea necesario */
+    margin: 10px 0; /* Espaciado vertical entre los botones */
+    border-radius: 8px; /* Bordes redondeados */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    transition: transform 0.2s, box-shadow 0.2s; /* Efectos de transición */
+  }
+  
+  /* Estilos individuales para cada botón */
+  .button-1 {
+    margin-left: 40px;
+    margin-right: 60px;
+  }
+  
+  .button-2 {
+    margin-left: 150px;
+    margin-right: 20px;
+  }
+  
+  .button-3 {
+    margin-left: 40px;
+    margin-right: 60px;
+  }
+  
+  .button-4 {
+    margin-left: 150px;
+    margin-right: 20px;
+  }
+  
+  .button-5 {
+    margin-left: 40px;
+    margin-right: 60px;
+  }
+  
+  .button-6 {
+    margin-left: 150px;
+    margin-right: 20px;
+  }
+  
+  .button-7 {
+    margin-left: 40px;
+    margin-right: 60px;
+  }
+  
+  .button-8 {
+    margin-left: 150px;
+    margin-right: 20px;
+  }
+  
+  /* Efecto al pasar el mouse */
+  .button-card:hover {
+    transform: translateY(-3px); /* Levanta el botón al pasar el mouse */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Aumenta la sombra */
+  }
+  
