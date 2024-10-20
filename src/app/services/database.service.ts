@@ -331,47 +331,61 @@ export class UserService {
    // Método para obtener los niveles
    async getNiveles(idusuario: number): Promise<Nivel[]> {
     try {
-      const res = await this.database.executeSql('SELECT n.*, p.progreso, p.completado FROM niveles n LEFT JOIN progreso p ON n.idnivel = p.idnivel AND p.idusuario = ?', [idusuario]);
-      let niveles: Nivel[] = [];
-  
-      if (res.rows.length > 0) {
-        for (let i = 0; i < res.rows.length; i++) {
-          niveles.push(new Nivel(
-            res.rows.item(i).idnivel,
-            res.rows.item(i).nombre,
-            res.rows.item(i).total_subniveles,
-            res.rows.item(i).dificultad,
-            res.rows.item(i).acceso === 'true'
-          ));
+        await this.actualizarAccesoNivel(1);
+        const res = await this.database.executeSql(
+            `SELECT n.idnivel, n.nombre, n.total_subniveles, n.dificultad, n.acceso, MAX(p.progreso) as progreso, MAX(p.completado) as completado
+             FROM niveles n
+             LEFT JOIN progreso p ON n.idnivel = p.idnivel AND p.idusuario = ?
+             GROUP BY n.idnivel, n.nombre, n.total_subniveles, n.dificultad, n.acceso`,
+            [idusuario]
+        );
+
+        let niveles: Nivel[] = [];
+
+        if (res.rows.length > 0) {
+            for (let i = 0; i < res.rows.length; i++) {
+                niveles.push(new Nivel(
+                    res.rows.item(i).idnivel,
+                    res.rows.item(i).nombre,
+                    res.rows.item(i).total_subniveles,
+                    res.rows.item(i).dificultad,
+                    res.rows.item(i).acceso === true // Mantener como booleano
+                ));
+            }
         }
-      }
-  
-      return niveles;
+
+        return niveles;
     } catch (error) {
-      console.error('Error al obtener niveles:', error);
-      return [];
+        console.error('Error al obtener niveles:', error);
+        return [];
     }
-  }
+}
+
+
   
   
   
-  async actualizarAccesoNivel(idusuario: number, idnivel: number, acceso: boolean) {
-    try {
-      // Actualizar el nivel en la tabla progreso para el usuario específico
-      await this.database.executeSql(
-        'UPDATE progreso SET acceso = ? WHERE idusuario = ? AND idnivel = ?',
-        [acceso, idusuario, idnivel]
-      );
   
-      // Refrescar niveles después de actualizar
-      await this.getNiveles(idusuario);
-      this.presentAlert("Acceso Actualizado", `El acceso del nivel ${idnivel} se actualizó a ${acceso}`);
-    } catch (e) {
-      this.presentAlert('ActualizarAcceso', 'Error: ' + JSON.stringify(e));
+async actualizarAccesoNivel(idnivel: number) {
+  try {
+    console.log(`Actualizando acceso: idnivel=${idnivel}, acceso=true`);
+
+    // Reemplazar directamente el acceso a true
+    const res = await this.database.executeSql(
+      'UPDATE niveles SET acceso = ? WHERE idnivel = ?',
+      [1, idnivel] // Usamos 1 para true
+    );
+
+    if (res.rowsAffected > 0) {
+      console.log(`Nivel ${idnivel} actualizado a acceso = true`);
+    } else {
+      console.log(`Error: No se pudo actualizar el acceso para el nivel ${idnivel}`);
     }
+  } catch (e) {
+    console.error('Error al actualizar el acceso del nivel:', JSON.stringify(e));
   }
-  
-  
+}
+
 
   //
   fetchNiveles(): Observable<Nivel[]> {
@@ -417,31 +431,67 @@ export class UserService {
   }
 
   // Actualizar progreso
-  async actualizarProgreso(idusuario: number, idnivel: number, idsubnivel: number, progreso: number, completado: boolean) {
+  async actualizarProgresoSubnivel(idusuario: number, idnivel: number, idsubnivel: number, completado: boolean) {
     try {
-        console.log(`Actualizando progreso: usuario=${idusuario}, nivel=${idnivel}, subnivel=${idsubnivel}, progreso=${progreso}, completado=${completado}`);
+      console.log(`Actualizando estado de subnivel: usuario=${idusuario}, nivel=${idnivel}, subnivel=${idsubnivel}, completado=${completado}`);
+  
+      // Verificar si el progreso del subnivel ya está en progreso
+      const res = await this.database.executeSql(
+        'SELECT * FROM progreso WHERE idusuario = ? AND idnivel = ? AND idsubnivel = ?',
+        [idusuario, idnivel, idsubnivel]
+      );
+  
+      if (res.rows.length > 0) {
+        // Si existe, actualizar el estado a completado
+        await this.database.executeSql(
+          'UPDATE progreso SET completado = ? WHERE idusuario = ? AND idnivel = ? AND idsubnivel = ?',
+          [completado, idusuario, idnivel, idsubnivel]
+        );
+      } else {
+        // Si no existe, insertar nuevo registro
+        await this.database.executeSql(
+          'INSERT INTO progreso (idusuario, idnivel, idsubnivel, completado) VALUES (?, ?, ?, ?)',
+          [idusuario, idnivel, idsubnivel, completado]
+        );
+      }
+    } catch (err) {
+      console.error('Error al actualizar el estado del subnivel:', JSON.stringify(err));
+      console.log('Información del error:', err);
+    }
+  }
+  
+
+async actualizarProgresoNivel(idusuario: number, idnivel: number, progreso: number, completado: boolean) {
+    try {
+        console.log(`Actualizando progreso del nivel: usuario=${idusuario}, nivel=${idnivel}, progreso=${progreso}, completado=${completado}`);
+        
         const res = await this.database.executeSql(
-            'SELECT * FROM progreso WHERE idusuario = ? AND idnivel = ? AND idsubnivel = ?',
-            [idusuario, idnivel, idsubnivel]
+            'SELECT * FROM progreso WHERE idusuario = ? AND idnivel = ?',
+            [idusuario, idnivel]
         );
 
         if (res.rows.length > 0) {
-            // Actualizar el progreso existente
+            // Si ya existe progreso del nivel, actualizar
             await this.database.executeSql(
-                'UPDATE progreso SET progreso = ?, completado = ? WHERE idusuario = ? AND idnivel = ? AND idsubnivel = ?',
-                [progreso, completado, idusuario, idnivel, idsubnivel]
+                'UPDATE progreso SET progreso = ?, completado = ? WHERE idusuario = ? AND idnivel = ?',
+                [progreso, completado, idusuario, idnivel]
             );
         } else {
-            // Insertar nuevo progreso
+            // Si no hay progreso registrado, insertar nuevo
             await this.database.executeSql(
-                'INSERT INTO progreso (idusuario, idnivel, idsubnivel, progreso, completado) VALUES (?, ?, ?, ?, ?)',
-                [idusuario, idnivel, idsubnivel, progreso, completado]
+                'INSERT INTO progreso (idusuario, idnivel, progreso, completado) VALUES (?, ?, ?, ?)',
+                [idusuario, idnivel, progreso, completado]
             );
         }
-    } catch (e) {
-        console.error('Error al actualizar el progreso:', e);
-    }
+    } catch (err) { // Cambié 'error' por 'err' para evitar confusiones
+      console.error('Error al actualizar el estado del nivel:', err);
+      console.log('Información del error:', err); // Agregar más información sobre el error
+  }
+  
 }
+
+
+
 
   
   // Método para obtener el progreso
@@ -469,32 +519,43 @@ export class UserService {
       return [];
     }
 }
+
+
 async desbloquearSiguienteNivel(idusuario: number, idnivel: number) {
   try {
-    // Verificar si el usuario ha completado todos los subniveles del nivel
+    // Verificar si el usuario ha completado todos los subniveles del nivel actual
     const res = await this.database.executeSql(
       'SELECT * FROM progreso WHERE idusuario = ? AND idnivel = ? AND completado = ?',
       [idusuario, idnivel, true]
     );
+
+    console.log('Resultado de progreso completado:', res);
 
     const subnivelesRes = await this.database.executeSql(
       'SELECT * FROM subniveles WHERE idnivel = ?',
       [idnivel]
     );
 
+    console.log('Subniveles del nivel:', subnivelesRes);
+
     if (res.rows.length === subnivelesRes.rows.length) {
-      // Desbloquear el siguiente nivel para este usuario
       const nextLevel = idnivel + 1;
-      await this.database.executeSql(
-        'INSERT OR REPLACE INTO progreso (idusuario, idnivel, progreso, completado, acceso) VALUES (?, ?, ?, ?, ?)',
-        [idusuario, nextLevel, 0, false, true]
-      );
+
+      // Obtener los niveles actualizados sin cambiar el acceso
+      await this.getNiveles(idusuario); // Solo obtener los niveles actualizados
+
       console.log(`Nivel ${nextLevel} desbloqueado para el usuario ${idusuario}.`);
+    } else {
+      console.log('No se han completado todos los subniveles aún.');
     }
   } catch (e) {
-    console.error('Error al desbloquear el siguiente nivel:', e);
+    console.error('Error al desbloquear el siguiente nivel:', JSON.stringify(e, Object.getOwnPropertyNames(e)));
   }
 }
+
+
+
+
 
 
 

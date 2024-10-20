@@ -21,17 +21,17 @@ export class HomePage implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Recuperar el ID del usuario logeado
     this.idusuario = Number(localStorage.getItem('userId'));
     if (!this.idusuario) {
       alert('No se ha encontrado un usuario logeado');
       this.router.navigate(['/login']);
+      return;
     }
   
     this.userService.dbState().subscribe((ready) => {
       if (ready) {
         this.userService.getNiveles(this.idusuario).then((niveles) => {
-          console.log('Niveles:', niveles); // Verificar los datos de niveles
+          console.log('Niveles Recuperados:', JSON.stringify(niveles));
           this.niveles = niveles;
         });
       }
@@ -72,6 +72,22 @@ export class HomePage implements OnInit {
   }
 
   debugAccess() {
-    console.log('Debug Acceso:', JSON.stringify(this.niveles, null, 2));
+    this.userService.database.executeSql(
+      `SELECT DISTINCT n.* FROM niveles n 
+       JOIN progreso p ON n.idnivel = p.idnivel 
+       WHERE p.idusuario = ?`,
+      [this.idusuario]
+    )
+    .then((res) => {
+      const niveles = [];
+      for (let i = 0; i < res.rows.length; i++) {
+        niveles.push(res.rows.item(i));
+      }
+      console.log('Debug Acceso desde la base de datos:', JSON.stringify(niveles, null, 2));
+    })
+    .catch(e => console.log('Error en debugAccess:', JSON.stringify(e)));
   }
+  
+  
+  
 }

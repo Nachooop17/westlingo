@@ -3,6 +3,7 @@ import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { UserService } from '@services/database.service'; // Importar UserService
 import { Subnivel } from '@services/subniveles'; // Importar Subnivel
+import { Nivel } from '@services/niveles';
 
 @Component({
   selector: 'app-nivel-uno-5',
@@ -16,6 +17,8 @@ export class NivelUno5Page implements OnInit {
   private idusuario: number = 0;
   public subniveles: Subnivel[] = []; // Almacenar subniveles
   private idnivel = 1; // Nivel actual
+  niveles: Nivel[] = [];
+
 
   constructor(
     private router: Router, 
@@ -58,31 +61,49 @@ export class NivelUno5Page implements OnInit {
   
     if (subnivel && !subnivel.completado) {
       this.correctAnswers++;
-      this.progress = this.correctAnswers / this.totalLevels; // Calcular progreso
+      this.progress = this.correctAnswers / this.totalLevels;
   
       console.log(`Respuesta correcta: ${this.correctAnswers}/${this.totalLevels}, Progreso: ${this.progress}`);
   
-      // Actualizar progreso en la base de datos
-      await this.userService.actualizarProgreso(this.idusuario, this.idnivel, idsubnivel, this.progress, true);
+      await this.userService.actualizarProgresoSubnivel(this.idusuario, this.idnivel, idsubnivel, true);
+      await this.userService.actualizarProgresoNivel(this.idusuario, this.idnivel, this.progress, this.correctAnswers === this.totalLevels);
   
       if (this.correctAnswers >= this.totalLevels) {
-        // Desbloquear el siguiente nivel si todos los subniveles están completos
-        await this.userService.desbloquearSiguienteNivel(this.idusuario, this.idnivel);
+        // El usuario ha completado todos los subniveles del nivel
+        try {
+          console.log(`ID del nivel actual antes del incremento: ${this.idnivel}`);
+          const siguienteNivel = this.idnivel + 1; // Identificar el siguiente nivel
   
-        const alert = await this.alertController.create({
-          header: '¡Felicidades!',
-          message: '¡Has completado el nivel uno!',
-          buttons: ['OK']
-        });
-        await alert.present();
-        this.router.navigate(['/home']);
+          await this.userService.actualizarAccesoNivel(siguienteNivel); // Desbloquear el siguiente nivel
+          console.log(`Nivel ${siguienteNivel} desbloqueado para el usuario ${this.idusuario}.`);
+  
+          const alert = await this.alertController.create({
+            header: '¡Felicidades!',
+            message: `¡Has completado el nivel ${this.idnivel}!`,
+            buttons: ['OK']
+          });
+          await alert.present();
+          this.router.navigate(['/home']);
+  
+          // Después de la actualización y confirmación, ahora incrementar el idnivel
+          this.idnivel++;
+        } catch (error) {
+          console.error('Error al actualizar el acceso al siguiente nivel:', error);
+        }
+  
+        // Actualizar y recargar los niveles después de actualizar el acceso
+        this.niveles = await this.userService.getNiveles(this.idusuario);
       } else {
-        // Navegar al siguiente subnivel
         const nextSubnivel = `nivel-uno.${this.correctAnswers + 1}`;
         this.router.navigate([`/${nextSubnivel}`]);
       }
+    } else {
+      console.log('Este subnivel ya está completado.');
     }
   }
+  
+  
+
   
 
   async handleIncorrectAnswer() {

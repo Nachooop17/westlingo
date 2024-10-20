@@ -361,6 +361,10 @@ const routes: Routes = [
     path: 'nivel-nueve.8',
     loadChildren: () => import('./pages/nivel-nueve.8/nivel-nueve.8.module').then( m => m.NivelNueve8PageModule)
   },
+  {
+    path: 'profile',
+    loadChildren: () => import('./pages/profile/profile.module').then( m => m.ProfilePageModule)
+  },
 ];
 
 @NgModule({

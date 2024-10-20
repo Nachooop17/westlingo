@@ -2,6 +2,14 @@
     text-align: center;
     margin-top: 20px;
   }
+  ion-progress-bar {
+    margin: 20px 0;
+    height: 20px;
+    border-radius: 10px;
+    --background: #e0e0e0;
+    --background-activated: #007bff; // Color azul para el progreso
+  }
+  
   
   .image-container img {
     max-width: 70%; /* Ajusta esto según tu diseño */

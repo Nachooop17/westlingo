@@ -62,6 +62,14 @@ ion-header {
             
           }
         }
+        ion-progress-bar {
+          margin: 20px 0;
+          height: 20px;
+          border-radius: 10px;
+          --background: #e0e0e0;
+          --background-activated: #007bff; // Color azul para el progreso
+        }
+        
   
         &:hover {
           background-color: rgb(18, 18, 18); // Color de fondo al pasar el mouse

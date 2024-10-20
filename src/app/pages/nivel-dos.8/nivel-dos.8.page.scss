@@ -45,6 +45,14 @@ ion-header {
     font-weight: 500; // Negrita moderada
   }
 }
+ion-progress-bar {
+  margin: 20px 0;
+  height: 20px;
+  border-radius: 10px;
+  --background: #e0e0e0;
+  --background-activated: #007bff; // Color azul para el progreso
+}
+
 
 
 

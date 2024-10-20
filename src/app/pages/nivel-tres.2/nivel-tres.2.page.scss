@@ -60,6 +60,14 @@ ion-content {
           border-radius: 50%; // Asegura que la imagen sea redonda
         }
       }
+      ion-progress-bar {
+        margin: 20px 0;
+        height: 20px;
+        border-radius: 10px;
+        --background: #e0e0e0;
+        --background-activated: #007bff; // Color azul para el progreso
+      }
+      
 
       &:hover {
         background-color: rgba(0, 0, 0, 0.1); // Color de fondo al pasar el mouse (opcional)
