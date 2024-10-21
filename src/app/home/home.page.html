@@ -12,15 +12,15 @@
   
   <ng-container *ngIf="niveles && niveles.length > 0">
     <ion-card *ngFor="let nivel of niveles"
-              [color]="nivel.acceso ? 'secondary' : 'light'"
-              (click)="nivel.acceso ? irANivel(nivel.idnivel) : presentAlert('Acceso Denegado', 'Este nivel está bloqueado.')"
+              [color]="nivel.acceso === 'true' ? 'secondary' : 'light'" 
+              (click)="nivel.acceso === 'true' ? irANivel(nivel.idnivel) : presentAlert('Acceso Denegado', 'Este nivel está bloqueado.')"
               class="level-card">
       <ion-card-header>
         <ion-card-title>{{ nivel.nombre }}</ion-card-title>
         <ion-card-subtitle>Dificultad: {{ nivel.dificultad }}</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <ion-icon [name]="nivel.acceso ? 'lock-open-outline' : 'lock-closed-outline'"
+        <ion-icon [name]="nivel.acceso === 'true' ? 'lock-open-outline' : 'lock-closed-outline'" 
                   slot="end"></ion-icon>
       </ion-card-content>
     </ion-card>

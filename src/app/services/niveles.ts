@@ -3,14 +3,14 @@ export class Nivel {
   nombre: string;
   total_subniveles: number;
   dificultad: string; // Añadir esta línea
-  acceso: boolean;    // Añadir esta línea
+  acceso: string;    // Añadir esta línea
 
   constructor(
     idnivel: number,
     nombre: string,
     total_subniveles: number,
     dificultad: string,
-    acceso: boolean
+    acceso: string
   ) {
       this.idnivel = idnivel;
       this.nombre = nombre;

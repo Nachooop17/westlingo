@@ -1,0 +1,70 @@
+ion-content {
+    display: flex;
+    justify-content: center; /* Centrar horizontalmente */
+    align-items: flex-start; /* Alinear al inicio (parte superior) */
+    min-height: 100vh; /* Asegúrate de que ocupe toda la altura */
+    background-color: #252530; /* Color de fondo suave */
+    padding-top: 20px; /* Añadir algo de espacio en la parte superior */
+  }
+  
+  .form-container {
+    width: 90%; /* Ancho del formulario */
+    max-width: 600px; /* Máximo ancho para pantallas grandes */
+    margin-top: 20px; /* Espaciado superior para bajar el formulario */
+    margin-left: 20px;
+    background: #1e2a38; /* Fondo oscuro para el contenedor */
+    border-radius: 12px; /* Bordes redondeados */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada para dar profundidad */
+    padding: 30px; /* Espaciado interno */
+    color: #ffffff; /* Texto blanco para contraste */
+  }
+  
+  .logo {
+    display: block; /* Para que ocupe todo el ancho disponible */
+    margin: 0 auto 20px; /* Centrar y añadir espaciado debajo del logo */
+    max-width: 150px; /* Limitar el tamaño del logo */
+    height: 150px; /* Establecer altura fija para mantener proporciones */
+    border-radius: 100%; /* Hacer la imagen redondeada */
+    border: 3px solid #fff; /* Añadir borde blanco */
+    object-fit: cover; /* Asegurar que la imagen llena el contenedor */
+  }
+  
+  
+  ion-item {
+    margin-bottom: 15px; /* Espaciado entre los elementos */
+    background: #2e3b4e; /* Fondo oscuro para los elementos */
+    border-radius: 8px; /* Bordes redondeados */
+    padding: 10px; /* Espaciado interno */
+  }
+  
+  ion-button {
+    width: 90%; /* Ancho completo para botones */
+    background-color: #4a90e2; /* Azul suave para el botón */
+    color: #ffffff; /* Texto blanco */
+    border-radius: 20px; /* Bordes redondeados */
+    transition: background-color 0.3s; /* Transición suave */
+    margin-top: 20px; /* Espaciado superior */
+    margin-right: 20px;
+   margin-left: 20px; 
+  }
+  
+  ion-button:hover {
+    background-color: #357abd; /* Color más oscuro al pasar el ratón */
+  }
+  
+  .login-prompt {
+    margin-top: 20px; /* Espaciado superior */
+    font-size: 16px; /* Tamaño de fuente */
+    color: #b0b8c1; /* Color gris claro para el texto */
+    text-align: center; /* Centrar el texto */
+  }
+  
+  .login-link {
+    color: #4a90e2; /* Color azul para el enlace */
+    text-decoration: underline; /* Subrayar el texto */
+  }
+  
+  .login-link:hover {
+    color: #357abd; /* Color más oscuro al pasar el ratón */
+  }
+  

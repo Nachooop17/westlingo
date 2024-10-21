@@ -28,6 +28,7 @@ export class LoginPage {
     if (usuario) {
       // Guardar el ID del usuario en localStorage
       localStorage.setItem('userId', usuario.idusuario.toString());
+
       
       // Redirige a la página principal
       this.router.navigate(['/home']);

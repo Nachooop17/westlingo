@@ -30,6 +30,7 @@ export class HomePage implements OnInit {
   
     this.userService.dbState().subscribe((ready) => {
       if (ready) {
+        this.userService.actualizarAccesoNivel(this.idusuario,1);
         this.userService.getNiveles(this.idusuario).then((niveles) => {
           console.log('Niveles Recuperados:', JSON.stringify(niveles));
           this.niveles = niveles;

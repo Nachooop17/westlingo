@@ -46,7 +46,8 @@ export class RegisterPage {
 
     if (form.valid) {
       try {
-        const usuario = await this.userService.insertarUsuario(this.name, this.email, this.password);
+        const usuario = await this.userService.insertarUsuario(this.name, this.email, this.password, null);
+
         if (usuario) {
           localStorage.setItem('userId', usuario.idusuario.toString());
           await this.showAlert('Registro exitoso', 'Usuario registrado correctamente');
