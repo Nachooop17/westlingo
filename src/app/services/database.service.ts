@@ -23,7 +23,7 @@ export class UserService {
       nombre VARCHAR(100) NOT NULL,
       email VARCHAR(100) NOT NULL,
       password VARCHAR(100) NOT NULL,
-      foto_perfil BLOB  -- Añadir campo para la foto de perfil
+      foto_perfil VARCHAR(50)  -- Añadir campo para la foto de perfil
     );
   `;
   tablaNiveles: string = `
@@ -203,7 +203,7 @@ CREATE TABLE IF NOT EXISTS logros (
     }
   }
 
-  async insertarUsuario(nombre: string, email: string, password: string, foto_perfil: Blob | null) {
+  async insertarUsuario(nombre: string, email: string, password: string, foto_perfil: string | null) {
     try {
       await this.database.executeSql(
         'INSERT INTO usuario(nombre, email, password, foto_perfil) VALUES (?, ?, ?, ?)',
@@ -226,6 +226,7 @@ CREATE TABLE IF NOT EXISTS logros (
   }
   
   
+  
   async actualizarUsuario(idusuario: number, nombre: string, email: string, password: string, foto_perfil: string) {
     try {
       await this.database.executeSql(
@@ -241,7 +242,7 @@ CREATE TABLE IF NOT EXISTS logros (
   
   
 
-  async modificarUsuario(id: number, nombre: string, email: string, password: string, foto_perfil: Blob) {
+  async modificarUsuario(id: number, nombre: string, email: string, password: string, foto_perfil: string | null) {
     try {
       await this.database.executeSql('UPDATE usuario SET nombre = ?, email = ?, password = ?, foto_perfil = ? WHERE idusuario = ?', [nombre, email, password, foto_perfil, id]);
       this.presentAlert("Modificar", "Usuario modificado de manera correcta");
@@ -250,6 +251,7 @@ CREATE TABLE IF NOT EXISTS logros (
       this.presentAlert('Modificar', 'Error: ' + JSON.stringify(e));
     }
   }
+  
   
 
   async eliminarUsuario(id: number) {

@@ -11,7 +11,7 @@ import { Logro } from '@services/logros'; // Ajusta la ruta según tu estructura
 })
 export class ProfilePage implements OnInit {
   user: Usuario | undefined;
-  imagen: string | undefined; // Cambiar a string
+  imagen: any;
   logros: Logro[] = []; // Inicializar como un arreglo vacío
 
   constructor(private userService: UserService) {}
@@ -25,11 +25,7 @@ export class ProfilePage implements OnInit {
             this.userService.fetchUsuarios().subscribe((usuarios) => {
               this.user = usuarios.find(user => user.idusuario === parseInt(userId, 10));
               if (this.user && this.user.foto_perfil) {
-                const reader = new FileReader();
-                reader.onload = (e: any) => {
-                  this.imagen = e.target.result;
-                };
-                reader.readAsDataURL(this.user.foto_perfil); // Leer el Blob como Data URL
+                this.imagen = this.user.foto_perfil;
               }
             });
           });
@@ -53,15 +49,11 @@ export class ProfilePage implements OnInit {
     if (image && image.webPath) {
       this.imagen = image.webPath;
 
-      // Convertir la imagen a Blob
-      const response = await fetch(image.webPath);
-      const blob = await response.blob();
-
       // Asegurarse de que el usuario y su idusuario existan
       if (this.user && this.user.idusuario !== undefined) {
-        this.user.foto_perfil = blob;
+        this.user.foto_perfil = this.imagen;
         // Actualizar la foto de perfil en la base de datos
-        await this.userService.modificarUsuario(this.user.idusuario, this.user.nombre, this.user.email, this.user.password, blob);
+        await this.userService.modificarUsuario(this.user.idusuario, this.user.nombre, this.user.email, this.user.password, this.imagen);
       } else {
         console.error('Usuario o ID de usuario no definido');
       }
