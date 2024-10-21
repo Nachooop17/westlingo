@@ -342,8 +342,77 @@ CREATE TABLE IF NOT EXISTS logros (
       { idnivel: 1, nombre: 'Subnivel 1.7', respuesta_correcta: 'Opción 1', imagen: 'nivel-uno-7.png', completado: false },
       { idnivel: 1, nombre: 'Subnivel 1.8', respuesta_correcta: 'Opción 2', imagen: 'nivel-uno-8.png', completado: false },
       //
-      { idnivel: 2, nombre: 'Subnivel 2.1', respuesta_correcta: 'Opción 1', imagen: 'ruta_imagen3.jpg' },
-      // Y así sucesivamente
+      { idnivel: 2, nombre: 'Subnivel 2.1', respuesta_correcta: 'Opción 1', imagen: 'nivel-dos-1.png', completado: false },
+      { idnivel: 2, nombre: 'Subnivel 2.2', respuesta_correcta: 'Opción 2', imagen: 'nivel-dos-2.png', completado: false },
+      { idnivel: 2, nombre: 'Subnivel 2.3', respuesta_correcta: 'Opción 1', imagen: 'nivel-dos-3.png', completado: false },
+      { idnivel: 2, nombre: 'Subnivel 2.4', respuesta_correcta: 'Opción 2', imagen: 'nivel-dos-4.png', completado: false },
+      { idnivel: 2, nombre: 'Subnivel 2.5', respuesta_correcta: 'Opción 1', imagen: 'nivel-dos-5.png', completado: false },
+      { idnivel: 2, nombre: 'Subnivel 2.6', respuesta_correcta: 'Opción 2', imagen: 'nivel-dos-6.png', completado: false },
+      { idnivel: 2, nombre: 'Subnivel 2.7', respuesta_correcta: 'Opción 1', imagen: 'nivel-dos-7.png', completado: false },
+      { idnivel: 2, nombre: 'Subnivel 2.8', respuesta_correcta: 'Opción 2', imagen: 'nivel-dos-8.png', completado: false },
+      //
+      { idnivel: 3, nombre: 'Subnivel 3.1', respuesta_correcta: 'Opción 1', imagen: 'nivel-tres-1.png', completado: false },
+      { idnivel: 3, nombre: 'Subnivel 3.2', respuesta_correcta: 'Opción 2', imagen: 'nivel-tres-2.png', completado: false },
+      { idnivel: 3, nombre: 'Subnivel 3.3', respuesta_correcta: 'Opción 1', imagen: 'nivel-tres-3.png', completado: false },
+      { idnivel: 3, nombre: 'Subnivel 3.4', respuesta_correcta: 'Opción 2', imagen: 'nivel-tres-4.png', completado: false },
+      { idnivel: 3, nombre: 'Subnivel 3.5', respuesta_correcta: 'Opción 1', imagen: 'nivel-tres-5.png', completado: false },
+      { idnivel: 3, nombre: 'Subnivel 3.6', respuesta_correcta: 'Opción 2', imagen: 'nivel-tres-6.png', completado: false },
+      { idnivel: 3, nombre: 'Subnivel 3.7', respuesta_correcta: 'Opción 1', imagen: 'nivel-tres-7.png', completado: false },
+      { idnivel: 3, nombre: 'Subnivel 3.8', respuesta_correcta: 'Opción 2', imagen: 'nivel-tres-8.png', completado: false },
+      //
+      { idnivel: 4, nombre: 'Subnivel 4.1', respuesta_correcta: 'Opción 1', imagen: 'nivel-cuatro-1.png', completado: false },
+      { idnivel: 4, nombre: 'Subnivel 4.2', respuesta_correcta: 'Opción 2', imagen: 'nivel-cuatro-2.png', completado: false },
+      { idnivel: 4, nombre: 'Subnivel 4.3', respuesta_correcta: 'Opción 1', imagen: 'nivel-cuatro-3.png', completado: false },
+      { idnivel: 4, nombre: 'Subnivel 4.4', respuesta_correcta: 'Opción 2', imagen: 'nivel-cuatro-4.png', completado: false },
+      { idnivel: 4, nombre: 'Subnivel 4.5', respuesta_correcta: 'Opción 1', imagen: 'nivel-cuatro-5.png', completado: false },
+      { idnivel: 4, nombre: 'Subnivel 4.6', respuesta_correcta: 'Opción 2', imagen: 'nivel-cuatro-6.png', completado: false },
+      { idnivel: 4, nombre: 'Subnivel 4.7', respuesta_correcta: 'Opción 1', imagen: 'nivel-cuatro-7.png', completado: false },
+      { idnivel: 4, nombre: 'Subnivel 4.8', respuesta_correcta: 'Opción 2', imagen: 'nivel-cuatro-8.png', completado: false },
+      //
+      { idnivel: 5, nombre: 'Subnivel 5.1', respuesta_correcta: 'Opción 1', imagen: 'nivel-cinco-1.png', completado: false },
+      { idnivel: 5, nombre: 'Subnivel 5.2', respuesta_correcta: 'Opción 2', imagen: 'nivel-cinco-2.png', completado: false },
+      { idnivel: 5, nombre: 'Subnivel 5.3', respuesta_correcta: 'Opción 1', imagen: 'nivel-cinco-3.png', completado: false },
+      { idnivel: 5, nombre: 'Subnivel 5.4', respuesta_correcta: 'Opción 2', imagen: 'nivel-cinco-4.png', completado: false },
+      { idnivel: 5, nombre: 'Subnivel 5.5', respuesta_correcta: 'Opción 1', imagen: 'nivel-cinco-5.png', completado: false },
+      { idnivel: 5, nombre: 'Subnivel 5.6', respuesta_correcta: 'Opción 2', imagen: 'nivel-cinco-6.png', completado: false },
+      { idnivel: 5, nombre: 'Subnivel 5.7', respuesta_correcta: 'Opción 1', imagen: 'nivel-dos-7.png', completado: false },
+      { idnivel: 5, nombre: 'Subnivel 5.8', respuesta_correcta: 'Opción 2', imagen: 'nivel-udos-8.png', completado: false },
+      //
+      { idnivel: 6, nombre: 'Subnivel 6.1', respuesta_correcta: 'Opción 1', imagen: 'nivel-seis-1.png', completado: false },
+      { idnivel: 6, nombre: 'Subnivel 6.2', respuesta_correcta: 'Opción 2', imagen: 'nivel-seis-2.png', completado: false },
+      { idnivel: 6, nombre: 'Subnivel 6.3', respuesta_correcta: 'Opción 1', imagen: 'nivel-seis-3.png', completado: false },
+      { idnivel: 6, nombre: 'Subnivel 6.4', respuesta_correcta: 'Opción 2', imagen: 'nivel-seis-4.png', completado: false },
+      { idnivel: 6, nombre: 'Subnivel 6.5', respuesta_correcta: 'Opción 1', imagen: 'nivel-seis-5.png', completado: false },
+      { idnivel: 6, nombre: 'Subnivel 6.6', respuesta_correcta: 'Opción 2', imagen: 'nivel-seis-6.png', completado: false },
+      { idnivel: 6, nombre: 'Subnivel 6.7', respuesta_correcta: 'Opción 1', imagen: 'nivel-seis-7.png', completado: false },
+      { idnivel: 6, nombre: 'Subnivel 6.8', respuesta_correcta: 'Opción 2', imagen: 'nivel-seis-8.png', completado: false },
+      //
+      { idnivel: 7, nombre: 'Subnivel 7.1', respuesta_correcta: 'Opción 1', imagen: 'nivel-siete-1.png', completado: false },
+      { idnivel: 7, nombre: 'Subnivel 7.2', respuesta_correcta: 'Opción 2', imagen: 'nivel-siete-2.png', completado: false },
+      { idnivel: 7, nombre: 'Subnivel 7.3', respuesta_correcta: 'Opción 1', imagen: 'nivel-siete-3.png', completado: false },
+      { idnivel: 7, nombre: 'Subnivel 7.4', respuesta_correcta: 'Opción 2', imagen: 'nivel-siete-4.png', completado: false },
+      { idnivel: 7, nombre: 'Subnivel 7.5', respuesta_correcta: 'Opción 1', imagen: 'nivel-siete-5.png', completado: false },
+      { idnivel: 7, nombre: 'Subnivel 7.6', respuesta_correcta: 'Opción 2', imagen: 'nivel-siete-6.png', completado: false },
+      { idnivel: 7, nombre: 'Subnivel 7.7', respuesta_correcta: 'Opción 1', imagen: 'nivel-siete-7.png', completado: false },
+      { idnivel: 7, nombre: 'Subnivel 7.8', respuesta_correcta: 'Opción 2', imagen: 'nivel-siete-8.png', completado: false },
+      //
+      { idnivel: 8, nombre: 'Subnivel 8.1', respuesta_correcta: 'Opción 1', imagen: 'nivel-ocho-1.png', completado: false },
+      { idnivel: 8, nombre: 'Subnivel 8.2', respuesta_correcta: 'Opción 2', imagen: 'nivel-ocho-2.png', completado: false },
+      { idnivel: 8, nombre: 'Subnivel 8.3', respuesta_correcta: 'Opción 1', imagen: 'nivel-ocho-3.png', completado: false },
+      { idnivel: 8, nombre: 'Subnivel 8.4', respuesta_correcta: 'Opción 2', imagen: 'nivel-ocho-4.png', completado: false },
+      { idnivel: 8, nombre: 'Subnivel 8.5', respuesta_correcta: 'Opción 1', imagen: 'nivel-ocho-5.png', completado: false },
+      { idnivel: 8, nombre: 'Subnivel 8.6', respuesta_correcta: 'Opción 2', imagen: 'nivel-ocho-6.png', completado: false },
+      { idnivel: 8, nombre: 'Subnivel 8.7', respuesta_correcta: 'Opción 1', imagen: 'nivel-ocho-7.png', completado: false },
+      { idnivel: 8, nombre: 'Subnivel 8.8', respuesta_correcta: 'Opción 2', imagen: 'nivel-ocho-8.png', completado: false },
+      //
+      { idnivel: 9, nombre: 'Subnivel 9.1', respuesta_correcta: 'Opción 1', imagen: 'nivel-nueve-1.png', completado: false },
+      { idnivel: 9, nombre: 'Subnivel 9.2', respuesta_correcta: 'Opción 2', imagen: 'nivel-nueve-2.png', completado: false },
+      { idnivel: 9, nombre: 'Subnivel 9.3', respuesta_correcta: 'Opción 1', imagen: 'nivel-nueve-3.png', completado: false },
+      { idnivel: 9, nombre: 'Subnivel 9.4', respuesta_correcta: 'Opción 2', imagen: 'nivel-nueve-4.png', completado: false },
+      { idnivel: 9, nombre: 'Subnivel 9.5', respuesta_correcta: 'Opción 1', imagen: 'nivel-nueve-5.png', completado: false },
+      { idnivel: 9, nombre: 'Subnivel 9.6', respuesta_correcta: 'Opción 2', imagen: 'nivel-nueve-6.png', completado: false },
+      { idnivel: 9, nombre: 'Subnivel 9.7', respuesta_correcta: 'Opción 1', imagen: 'nivel-nueve-7.png', completado: false },
+      { idnivel: 9, nombre: 'Subnivel 9.8', respuesta_correcta: 'Opción 2', imagen: 'nivel-nueve-8.png', completado: false },
     ];
   
     for (let subnivel of subniveles) {
@@ -456,7 +525,7 @@ async actualizarAccesoNivel(idusuario: number, idnivel: number) {
             res.rows.item(i).nombre,
             res.rows.item(i).respuesta_correcta,
             res.rows.item(i).imagen,
-            res.rows.item(i).completado // Asegurarse de que el campo 'completado' está presente en la tabla
+            res.rows.item(i).completado === false
           ));
         }
       }

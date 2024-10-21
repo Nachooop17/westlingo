@@ -5,15 +5,20 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <!-- Barra de progreso -->
   <ion-progress-bar [value]="progress"></ion-progress-bar>
 
+  <!-- Imagen del nivel -->
   <div class="image-container">
     <img src="assets/img/nivel-dos-1.png" alt="Imagen del Nivel">
   </div>
+
+  <!-- Pregunta -->
   <div class="text-container">
     <ion-label>¿La seña de la imagen significa espalda?</ion-label>
   </div>
 
+  <!-- Opciones de respuesta -->
   <ion-list>
     <ion-item>
       <ion-label>Verdadero</ion-label>
@@ -25,5 +30,6 @@
     </ion-item>
   </ion-list>
 
+  <!-- Botón para enviar la respuesta -->
   <ion-button expand="block" color="primary" (click)="checkAnswer()">Enviar Respuesta</ion-button>
 </ion-content>

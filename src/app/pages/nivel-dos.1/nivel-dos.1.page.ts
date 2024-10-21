@@ -1,85 +1,169 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { UserService } from '@services/database.service'; // Importar UserService
+import { Subnivel } from '@services/subniveles'; // Importar Subnivel
+import { Nivel } from '@services/niveles';
 
 @Component({
   selector: 'app-nivel-dos-1',
   templateUrl: './nivel-dos.1.page.html',
   styleUrls: ['./nivel-dos.1.page.scss'],
 })
-export class NivelDos1Page {
+export class NivelDos1Page implements OnInit {
   public progress = 0;
   private totalLevels = 8;
   private correctAnswers = 0;
-  public respuestaVerdadero: boolean = false; // Inicializa el checkbox de Verdadero
-  public respuestaFalso: boolean = false; // Inicializa el checkbox de Falso
+  private idusuario: number = 0;
+  public subniveles: Subnivel[] = []; // Almacenar subniveles
+  private idnivel = 2; // Cambiar a nivel 2
+  niveles: Nivel[] = [];
 
-  constructor(private router: Router, private alertController: AlertController) {}
+  // Agregar las propiedades para las respuestas
+  public respuestaVerdadero: boolean = false;
+  public respuestaFalso: boolean = false;
+
+  constructor(
+    private router: Router, 
+    private alertController: AlertController, 
+    private userService: UserService // Inyectar UserService
+  ) {}
 
   ngOnInit() {
-    const storedProgress = localStorage.getItem('progress');
-    if (storedProgress) {
-      this.progress = parseFloat(storedProgress);
-      this.correctAnswers = Math.floor(this.progress * this.totalLevels);
-    }
-  }
-
-  async checkAnswer() {
-    const respuestaCorrecta = false; // La respuesta correcta es Falso
-
-    if (this.respuestaVerdadero && this.respuestaFalso) {
-      // Ambas opciones están seleccionadas
-      await this.showAlert('Selección Inválida', 'Por favor, selecciona solo una opción: Verdadero o Falso.');
-    } else if (this.respuestaVerdadero) {
-      // El usuario ha seleccionado Verdadero
-      await this.showAlert('Respuesta Incorrecta', 'Lo siento, esa no es la respuesta correcta. Inténtalo de nuevo.');
-    } else if (this.respuestaFalso) {
-      // El usuario ha seleccionado Falso
-      this.handleCorrectAnswer();
-    } else {
-      await this.showAlert('Selección Incompleta', 'Por favor, selecciona una opción: Verdadero o Falso.');
-    }
-  }
-
-  async handleCorrectAnswer() {
-    const alert = await this.alertController.create({
-      header: '¡Correcto!',
-      message: 'La respuesta es correcta, significa "Antes".',
-      buttons: [{
-        text: 'Continuar',
-        handler: () => {
-          this.correctAnswers++;
-          this.progress = this.correctAnswers / this.totalLevels;
-
-          localStorage.setItem('progress', this.progress.toString());
-          this.router.navigate(['/nivel-dos.2']); // Cambia a nivel 2
-
-          if (this.correctAnswers >= this.totalLevels) {
-            this.correctAnswers = 0;
-            this.progress = 0;
-
-            localStorage.setItem('progress', this.progress.toString());
-
-            this.alertController.create({
-              header: '¡Felicidades!',
-              message: '¡Has completado el nivel dos!',
-              buttons: ['OK']
-            }).then(alertFinal => alertFinal.present());
-            this.router.navigate(['/home']);
-          }
+    // Recuperar el ID del usuario logeado
+    const userId = localStorage.getItem('userId');
+    console.log('ID Usuario encontrado en localStorage:', userId); // Verificar aquí
+  
+    if (userId) {
+      this.idusuario = Number(userId);
+      // Continuar con la obtención de subniveles y progreso...
+      // Obtener subniveles
+      this.userService.getSubniveles(this.idnivel).then(subniveles => {
+        this.subniveles = subniveles;
+      });
+  
+      // Recuperar el progreso almacenado al iniciar la página
+      this.userService.getProgreso(this.idusuario).then(progresos => {
+        const progresoNivel = progresos.filter(p => p.idnivel === this.idnivel);
+        if (progresoNivel.length > 0) {
+          const completados = progresoNivel.filter(p => p.completado).length;
+          this.correctAnswers = completados;
+          this.progress = (this.correctAnswers / this.totalLevels); // Debe estar entre 0 y 1
+          console.log(`Progreso cargado: ${this.progress}`);
+        } else {
+          console.log('No se ha encontrado progreso para este nivel');
         }
-      }]
-    });
-
-    await alert.present();
+      });
+    } else {
+      console.error('No se ha encontrado el idusuario en localStorage');
+      alert('No se ha encontrado un usuario logeado');
+      this.router.navigate(['/login']);
+      return; // Asegúrate de que el flujo de control no continúe
+    }
   }
+  
+  
 
-  async showAlert(header: string, message: string) {
+  // Método para validar la respuesta
+  checkAnswer() {
+    console.log(`Verdadero: ${this.respuestaVerdadero}, Falso: ${this.respuestaFalso}`);
+    const currentSubnivel = this.correctAnswers + 1; // Cambiar a un subnivel basado en el número de respuestas correctas
+    if (this.respuestaVerdadero && !this.respuestaFalso) {
+        this.handleCorrectAnswer(currentSubnivel); // Llama a la función con el subnivel correspondiente
+    } else {
+        this.handleIncorrectAnswer();
+        this.vibrateDevice(); // Vibrar en respuesta incorrecta
+    }
+}
+
+  
+
+  async handleCorrectAnswer(idsubnivel: number) {
+    // Usar idusuario que se ha establecido en ngOnInit
+    if (!this.idusuario) {
+        console.error('No se encontró el idusuario');
+        return;
+    }
+
+    const subnivel = this.subniveles.find(s => s.idsubnivel === idsubnivel);
+
+    if (subnivel && !subnivel.completado) {
+        this.correctAnswers++;
+        this.progress = this.correctAnswers / this.totalLevels;
+
+        console.log(`Respuesta correcta: ${this.correctAnswers}/${this.totalLevels}, Progreso: ${this.progress}`);
+
+        // Pasar idusuario a las funciones correspondientes
+        await this.userService.actualizarProgresoSubnivel(this.idusuario, this.idnivel, idsubnivel, true);
+        await this.userService.actualizarProgresoNivel(this.idusuario, this.idnivel, this.progress, this.correctAnswers === this.totalLevels);
+
+        if (this.correctAnswers == this.totalLevels) {
+            // El usuario ha completado todos los subniveles del nivel
+            try {
+                console.log(`ID del nivel actual antes del incremento: ${this.idnivel}`);
+                const siguienteNivel = this.idnivel + 1; // Identificar el siguiente nivel
+
+                // Pasar el idusuario al actualizar el acceso del siguiente nivel
+                await this.userService.actualizarAccesoNivel(this.idusuario, siguienteNivel);
+                console.log(`Nivel ${siguienteNivel} desbloqueado para el usuario ${this.idusuario}.`);
+                
+                // Otorgar el logro al usuario
+                await this.userService.otorgarLogro(this.idusuario, 'Medalla de Bronce', 'Completaste el Nivel 1', new Date(), 'assets/img/medallabronce.png');
+
+                const alert = await this.alertController.create({
+                    header: '¡Felicidades!',
+                    message: `¡Has completado el nivel ${this.idnivel}!`,
+                    buttons: ['OK']
+                });
+                await alert.present();
+                this.router.navigate(['/home']);
+
+                // Incrementar idnivel después de la actualización y confirmación
+                this.idnivel++;
+            } catch (error) {
+                console.error('Error al actualizar el acceso al siguiente nivel:', error);
+            }
+
+            // Actualizar y recargar los niveles después de actualizar el acceso
+            this.niveles = await this.userService.getNiveles(this.idusuario);
+        } else if (this.correctAnswers > this.totalLevels) {
+            // Si de alguna manera hay más respuestas correctas de lo que debería
+            const alert = await this.alertController.create({
+                header: '¡Buen intento!',
+                message: `¡Pero ya habías completado el nivel ${this.idnivel}!`,
+                buttons: ['OK']
+            });
+            await alert.present();
+            this.router.navigate([`/home`]);
+        } else {
+            // Navegar al siguiente subnivel
+            console.log(`Correct Answers: ${this.correctAnswers}`);
+            const nextSubnivel = `nivel-dos.${this.correctAnswers + 1}`;
+            console.log(`Next Subnivel: ${nextSubnivel}`);
+            this.router.navigate([`/${nextSubnivel}`]);
+        }
+    } else {
+        console.log('Este subnivel ya está completado.');
+    }
+}
+
+  
+  
+  
+async handleIncorrectAnswer() {
     const alert = await this.alertController.create({
-      header: header,
-      message: message,
+      header: 'Respuesta Incorrecta',
+      message: 'Lo siento, esa no es la respuesta correcta. Inténtalo de nuevo.',
       buttons: ['OK']
     });
     await alert.present();
+  }
+   // Método para vibrar el dispositivo
+   async vibrateDevice() {
+    if (navigator && navigator.vibrate) {
+      navigator.vibrate(500); // Vibra por 0.5 segundos
+    } else {
+      console.error('La vibración no es soportada en este dispositivo.');
+    }
   }
 }

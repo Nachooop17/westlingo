@@ -60,60 +60,72 @@ export class NivelUno7Page implements OnInit {
 }
 
 async handleCorrectAnswer(idsubnivel: number) {
-  // Usar idusuario que se ha establecido en ngOnInit
-  if (!this.idusuario) {
-      console.error('No se encontró el idusuario');
-      return;
-  }
+    // Usar idusuario que se ha establecido en ngOnInit
+    if (!this.idusuario) {
+        console.error('No se encontró el idusuario');
+        return;
+    }
 
-  const subnivel = this.subniveles.find(s => s.idsubnivel === idsubnivel);
+    const subnivel = this.subniveles.find(s => s.idsubnivel === idsubnivel);
 
-  if (subnivel && !subnivel.completado) {
-      this.correctAnswers++;
-      this.progress = this.correctAnswers / this.totalLevels;
+    if (subnivel && !subnivel.completado) {
+        this.correctAnswers++;
+        this.progress = this.correctAnswers / this.totalLevels;
 
-      console.log(`Respuesta correcta: ${this.correctAnswers}/${this.totalLevels}, Progreso: ${this.progress}`);
+        console.log(`Respuesta correcta: ${this.correctAnswers}/${this.totalLevels}, Progreso: ${this.progress}`);
 
-      // Pasar idusuario a las funciones correspondientes
-      await this.userService.actualizarProgresoSubnivel(this.idusuario, this.idnivel, idsubnivel, true);
-      await this.userService.actualizarProgresoNivel(this.idusuario, this.idnivel, this.progress, this.correctAnswers === this.totalLevels);
+        // Pasar idusuario a las funciones correspondientes
+        await this.userService.actualizarProgresoSubnivel(this.idusuario, this.idnivel, idsubnivel, true);
+        await this.userService.actualizarProgresoNivel(this.idusuario, this.idnivel, this.progress, this.correctAnswers === this.totalLevels);
 
-      if (this.correctAnswers >= this.totalLevels) {
-          // El usuario ha completado todos los subniveles del nivel
-          try {
-              console.log(`ID del nivel actual antes del incremento: ${this.idnivel}`);
-              const siguienteNivel = this.idnivel + 1; // Identificar el siguiente nivel
+        if (this.correctAnswers == this.totalLevels) {
+            // El usuario ha completado todos los subniveles del nivel
+            try {
+                console.log(`ID del nivel actual antes del incremento: ${this.idnivel}`);
+                const siguienteNivel = this.idnivel + 1; // Identificar el siguiente nivel
 
-              // Pasar el idusuario al actualizar el acceso del siguiente nivel
-              await this.userService.actualizarAccesoNivel(this.idusuario, siguienteNivel);
-              console.log(`Nivel ${siguienteNivel} desbloqueado para el usuario ${this.idusuario}.`);
-              // Otorgar el logro al usuario
-              await this.userService.otorgarLogro(this.idusuario, 'Medalla de Bronce', 'Completaste el Nivel 1', new Date(), 'assets/img/medallabronce.png');
+                // Pasar el idusuario al actualizar el acceso del siguiente nivel
+                await this.userService.actualizarAccesoNivel(this.idusuario, siguienteNivel);
+                console.log(`Nivel ${siguienteNivel} desbloqueado para el usuario ${this.idusuario}.`);
+                
+                // Otorgar el logro al usuario
+                await this.userService.otorgarLogro(this.idusuario, 'Medalla de Bronce', 'Completaste el Nivel 1', new Date(), 'assets/img/medallabronce.png');
 
-              const alert = await this.alertController.create({
-                  header: '¡Felicidades!',
-                  message: `¡Has completado el nivel ${this.idnivel}!`,
-                  buttons: ['OK']
-              });
-              await alert.present();
-              this.router.navigate(['/home']);
+                const alert = await this.alertController.create({
+                    header: '¡Felicidades!',
+                    message: `¡Has completado el nivel ${this.idnivel}!`,
+                    buttons: ['OK']
+                });
+                await alert.present();
+                this.router.navigate(['/home']);
 
-              // Después de la actualización y confirmación, ahora incrementar el idnivel
-              this.idnivel++;
-          } catch (error) {
-              console.error('Error al actualizar el acceso al siguiente nivel:', error);
-          }
+                // Incrementar idnivel después de la actualización y confirmación
+                this.idnivel++;
+            } catch (error) {
+                console.error('Error al actualizar el acceso al siguiente nivel:', error);
+            }
 
-          // Actualizar y recargar los niveles después de actualizar el acceso
-          this.niveles = await this.userService.getNiveles(this.idusuario);
-      } else {
-          const nextSubnivel = `nivel-uno.${this.correctAnswers + 1}`;
-          this.router.navigate([`/${nextSubnivel}`]);
-      }
-  } else {
-      console.log('Este subnivel ya está completado.');
-  }
+            // Actualizar y recargar los niveles después de actualizar el acceso
+            this.niveles = await this.userService.getNiveles(this.idusuario);
+        } else if (this.correctAnswers > this.totalLevels) {
+            // Si de alguna manera hay más respuestas correctas de lo que debería
+            const alert = await this.alertController.create({
+                header: '¡Buen intento!',
+                message: `¡Pero ya habías completado el nivel ${this.idnivel}!`,
+                buttons: ['OK']
+            });
+            await alert.present();
+            this.router.navigate([`/home`]);
+        } else {
+            // Navegar al siguiente subnivel
+            const nextSubnivel = `nivel-uno.${this.correctAnswers + 1}`;
+            this.router.navigate([`/${nextSubnivel}`]);
+        }
+    } else {
+        console.log('Este subnivel ya está completado.');
+    }
 }
+
   
 
   async handleIncorrectAnswer() {
@@ -123,5 +135,18 @@ async handleCorrectAnswer(idsubnivel: number) {
       buttons: ['OK']
     });
     await alert.present();
+
+     // Llama a la función de vibración
+     await this.vibrateDevice();
+    }
+  
+    // Método para vibrar el dispositivo
+    async vibrateDevice() {
+      if (navigator && navigator.vibrate) {
+          navigator.vibrate(500); // Vibra por 0.5 segundos
+      } else {
+          console.error('La vibración no es soportada en este dispositivo.');
+      }
+    }
   }
-}
+  
