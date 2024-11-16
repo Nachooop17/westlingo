@@ -22,7 +22,7 @@ export class AppComponent implements OnInit {
     const currentRoute = this.router.url;
 
     // Rutas que no deben mostrar el menú
-    const forbiddenRoutes = ['/login', '/register', '/recuperar'];
+    const forbiddenRoutes = ['/login', '/register', '/recuperar', '/admin', '/admin-usuarios'];
 
     // Si estamos en alguna de las rutas prohibidas, ocultamos el menú
     if (forbiddenRoutes.includes(currentRoute)) {

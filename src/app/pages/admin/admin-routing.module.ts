@@ -7,6 +7,11 @@ const routes: Routes = [
   {
     path: '',
     component: AdminPage
+    
+  },
+  {
+    path: 'usuarios/:idusuario',
+    loadChildren: () => import('../admin-usuarios/admin-usuarios.module').then(m => m.AdminUsuariosPageModule),
   }
 ];
 

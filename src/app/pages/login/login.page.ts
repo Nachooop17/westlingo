@@ -22,14 +22,29 @@ export class LoginPage {
   ) {}
 
   async onLogin() {
+    // Verifica si las credenciales son las del administrador
+    if (this.loginData.email === 'admin@admin.com' && this.loginData.password === 'admin') {
+      // Redirige directamente a la página de administración
+      this.router.navigate(['/admin']);
+      return;
+    }
+
     // Llama a la función que verifica las credenciales
     const usuario = await this.userService.verificarUsuario(this.loginData.email, this.loginData.password);
 
     if (usuario) {
+      // Verifica si el usuario está baneado
+      if (usuario.baneo) {
+        await this.showAlert(
+          'Acceso denegado',
+          `Has sido baneado. Razón: ${usuario.razon || 'No especificada'}`
+        );
+        return; // Detiene el proceso de inicio de sesión
+      }
+
       // Guardar el ID del usuario en localStorage
       localStorage.setItem('userId', usuario.idusuario.toString());
 
-      
       // Redirige a la página principal
       this.router.navigate(['/home']);
     } else {

@@ -1,0 +1,10 @@
+.logo {
+    display: block; /* Para que ocupe todo el ancho disponible */
+    margin: 0 auto 20px; /* Centrar y añadir espaciado debajo del logo */
+    max-width: 150px; /* Limitar el tamaño del logo */
+    height: 150px; /* Establecer altura fija para mantener proporciones */
+    border-radius: 100%; /* Hacer la imagen redondeada */
+    border: 3px solid #fff; /* Añadir borde blanco */
+    object-fit: cover; /* Asegurar que la imagen llena el contenedor */
+  }
+  

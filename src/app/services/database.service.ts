@@ -781,6 +781,39 @@ async actualizarNombre(idusuario: number, newName: string) {
     throw new Error('No se pudo actualizar el nombre');
   }
 }
+async obtenerUsuarios(): Promise<Usuario[]> {
+  const query = 'SELECT * FROM usuario';
+  return this.database.executeSql(query, []).then((data) => {
+    const usuarios: Usuario[] = [];
+    for (let i = 0; i < data.rows.length; i++) {
+      usuarios.push(data.rows.item(i));
+    }
+    return usuarios;
+  });
+}
+async obtenerUsuarioPorId(idusuario: number): Promise<Usuario | null> {
+  const query = 'SELECT * FROM usuario WHERE idusuario = ?';
+  const result = await this.database.executeSql(query, [idusuario]);
+  return result.rows.length ? result.rows.item(0) : null;
+}
+
+async obtenerProgresoPorUsuario(idusuario: number): Promise<number> {
+  const query = 'SELECT AVG(progreso) as progreso FROM progreso WHERE idusuario = ?';
+  const result = await this.database.executeSql(query, [idusuario]);
+  return result.rows.length ? result.rows.item(0).progreso : 0;
+}
+
+async actualizarBaneoUsuario(id: number, baneo: boolean, razon: string) {
+  try {
+    await this.database.executeSql(
+      'UPDATE usuario SET baneo = ?, razon = ? WHERE idusuario = ?',
+      [baneo ? 1 : 0, razon, id]
+    );
+    //this.presentAlert('Baneo', 'El estado de baneo del usuario ha sido actualizado correctamente.');
+  } catch (e) {
+    this.presentAlert('Baneo', 'Error: ' + JSON.stringify(e));
+  }
+}
 
 
 
