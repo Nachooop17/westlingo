@@ -46,15 +46,15 @@ export class HomePage implements OnInit {
     if (nivel && nivel.acceso) {
       let ruta = '';
       switch(idnivel) {
-        case 1: ruta = '/nivel-uno'; break;
-        case 2: ruta = '/nivel-dos'; break;
-        case 3: ruta = '/nivel-tres'; break;
-        case 4: ruta = '/nivel-cuatro'; break;
-        case 5: ruta = '/nivel-cinco'; break;
-        case 6: ruta = '/nivel-seis'; break;
-        case 7: ruta = '/nivel-siete'; break;
-        case 8: ruta = '/nivel-ocho'; break;
-        case 9: ruta = '/nivel-nueve'; break;
+        case 1: ruta = '/nivel-uno.1'; break;
+        case 2: ruta = '/nivel-uno.2'; break;
+        case 3: ruta = '/nivel-uno.3'; break;
+        case 4: ruta = '/nivel-uno.4'; break;
+        case 5: ruta = '/nivel-uno.5'; break;
+        case 6: ruta = '/nivel-uno.6'; break;
+        case 7: ruta = '/nivel-uno.7'; break;
+        case 8: ruta = '/nivel-uno.8'; break;
+        case 9: ruta = '/nivel-uno.9'; break;
         default: ruta = `/nivel-${idnivel}`;
       }
       this.router.navigate([ruta]); // Navegar a la ruta correcta

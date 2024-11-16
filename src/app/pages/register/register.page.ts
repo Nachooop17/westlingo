@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { UserService } from '@services/database.service';
 import { Usuario } from '@services/users';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -14,7 +15,11 @@ export class RegisterPage {
   password!: string;
   r_password!: string;
 
-  constructor(private alertController: AlertController, private userService: UserService) {}
+  constructor(
+    private alertController: AlertController,
+    private userService: UserService,
+    private router: Router
+  ) {}
 
   async onRegister(form: { valid: any; }) {
     // Verifica si las contraseñas coinciden
@@ -50,9 +55,9 @@ export class RegisterPage {
 
         if (usuario) {
           localStorage.setItem('userId', usuario.idusuario.toString());
-          await this.showAlert('Registro exitoso', 'Usuario registrado correctamente');
-          // Redirigir a la página principal
-          // Se necesita importar Router y añadir redirección a HomePage
+          //await this.showAlert('Registro exitoso', 'Usuario registrado correctamente');
+          // Redirige a la página principal después del registro exitoso
+          this.router.navigate(['/home']); // Cambia '/home' al nombre de tu página principal
         } else {
           throw new Error('No se pudo registrar el usuario');
         }

@@ -21,11 +21,15 @@ export class UserService {
     CREATE TABLE IF NOT EXISTS usuario(
       idusuario INTEGER PRIMARY KEY AUTOINCREMENT,
       nombre VARCHAR(100) NOT NULL,
-      email VARCHAR(100) NOT NULL,
+      email VARCHAR(100) NOT NULL UNIQUE,  -- Asegura que el correo sea único
       password VARCHAR(100) NOT NULL,
-      foto_perfil VARCHAR(50)  -- Añadir campo para la foto de perfil
+      foto_perfil VARCHAR(50),
+      baneo BOOLEAN DEFAULT 0,
+      razon VARCHAR(255) DEFAULT NULL
     );
   `;
+
+
   tablaNiveles: string = `
   CREATE TABLE IF NOT EXISTS niveles(
     idnivel INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -76,7 +80,7 @@ CREATE TABLE IF NOT EXISTS logros (
 
 
   // Variables de insert por defecto
-  registroUsuario: string = "INSERT or IGNORE INTO usuario(idusuario, nombre, email, password) VALUES (1, 'Usuario Admin', 'admin@example.com', 'admin123')";
+  registroUsuario: string = "INSERT or IGNORE INTO usuario(idusuario, nombre, email, password) VALUES (1, 'Usuario Admin', 'admin@admin.com', 'admin123')";
 
   // Variables tipo observables para manipular los registros de la base de datos
   listaUsuarios = new BehaviorSubject<Usuario[]>([]);
@@ -89,6 +93,7 @@ CREATE TABLE IF NOT EXISTS logros (
 
   // Variable observable para el estatus de los niveles
   private isNivelesReady: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  userService: any;
 
   constructor(private sqlite: SQLite, private platform: Platform, private alertController: AlertController) {
     this.crearBD();
@@ -122,6 +127,7 @@ CREATE TABLE IF NOT EXISTS logros (
       await this.database.executeSql(this.tablaSubniveles, []);
       await this.database.executeSql(this.tablaProgreso, []);
       await this.database.executeSql(this.tablaLogros, []);
+      this.insertarUsuarioAdmin();
   
       // Insertar datos iniciales en las tablas de niveles y subniveles
       const nivelesExistentes = await this.getNivelesInicial();
@@ -193,7 +199,9 @@ CREATE TABLE IF NOT EXISTS logros (
             res.rows.item(i).nombre,
             res.rows.item(i).email,
             res.rows.item(i).password,
-            res.rows.item(i).foto_perfil
+            res.rows.item(i).foto_perfil,
+            res.rows.item(i).baneo === 1,  // Convierte a booleano (1 para true, 0 para false)
+            res.rows.item(i).razon || ''   // Si está vacío, define un valor predeterminado
           ));
         }
       }
@@ -202,19 +210,27 @@ CREATE TABLE IF NOT EXISTS logros (
       this.presentAlert('GetUsuarios', 'Error: ' + JSON.stringify(e));
     }
   }
-
-  async insertarUsuario(nombre: string, email: string, password: string, foto_perfil: string | null) {
+  
+  async insertarUsuario(nombre: string, email: string, password: string, foto_perfil: string | null, baneo: boolean = false, razon: string | null = null) {
     try {
+      // Verificar si el email ya existe
+      const res = await this.database.executeSql('SELECT * FROM usuario WHERE email = ?', [email]);
+      if (res.rows.length > 0) {
+        await this.presentAlert('Error', 'El correo electrónico ya está en uso');
+        return null; // No continúa con la inserción
+      }
+  
+      // Insertar el nuevo usuario si el correo no existe
       await this.database.executeSql(
-        'INSERT INTO usuario(nombre, email, password, foto_perfil) VALUES (?, ?, ?, ?)',
-        [nombre, email, password, foto_perfil]
+        'INSERT INTO usuario(nombre, email, password, foto_perfil, baneo, razon) VALUES (?, ?, ?, ?, ?, ?)',
+        [nombre, email, password, foto_perfil, baneo ? 1 : 0, razon]
       );
   
-      const res = await this.database.executeSql('SELECT * FROM usuario WHERE email = ? AND password = ?', [email, password]);
-      if (res.rows.length > 0) {
-        const usuario = res.rows.item(0);
+      const nuevoUsuario = await this.database.executeSql('SELECT * FROM usuario WHERE email = ? AND password = ?', [email, password]);
+      if (nuevoUsuario.rows.length > 0) {
+        const usuario = nuevoUsuario.rows.item(0);
         localStorage.setItem('userId', usuario.idusuario.toString());
-        await this.presentAlert("Agregar", "Usuario agregado de manera correcta");
+        //await this.presentAlert("Agregar", "Usuario agregado de manera correcta");
         await this.getUsuarios();
         return usuario;
       } else {
@@ -224,6 +240,9 @@ CREATE TABLE IF NOT EXISTS logros (
       this.presentAlert('Agregar', 'Error: ' + JSON.stringify(e));
     }
   }
+  
+  
+  
   
   
   
@@ -293,7 +312,7 @@ CREATE TABLE IF NOT EXISTS logros (
   async actualizarPassword(email: string, newPassword: string): Promise<void> {
     try {
       await this.database.executeSql('UPDATE usuario SET password = ? WHERE email = ?', [newPassword, email]);
-      await this.presentAlert("Actualizar Contraseña", "Contraseña actualizada correctamente");
+      //await this.presentAlert("Actualizar Contraseña", "Contraseña actualizada correctamente");
     } catch (e) {
       this.presentAlert('Actualizar Contraseña', 'Error: ' + JSON.stringify(e));
     }
@@ -307,9 +326,9 @@ CREATE TABLE IF NOT EXISTS logros (
       { nombre: 'Nivel 4', total_subniveles: 8, dificultad: 'Medio', acceso: 'false' },
       { nombre: 'Nivel 5', total_subniveles: 8, dificultad: 'Medio', acceso: 'false' },
       { nombre: 'Nivel 6', total_subniveles: 8, dificultad: 'Medio', acceso: 'false' },
-      { nombre: 'Nivel 7', total_subniveles: 8, dificultad: 'Avanzado', acceso: 'false' },
-      { nombre: 'Nivel 8', total_subniveles: 8, dificultad: 'Avanzado', acceso: 'false' },
-      { nombre: 'Nivel 9', total_subniveles: 8, dificultad: 'Avanzado', acceso: 'false' },
+      { nombre: 'Nivel 7', total_subniveles: 8, dificultad: 'Difícil', acceso: 'false' },
+      { nombre: 'Nivel 8', total_subniveles: 8, dificultad: 'Difícil', acceso: 'false' },
+      
     ];
   
     try {
@@ -323,7 +342,7 @@ CREATE TABLE IF NOT EXISTS logros (
         );
       }
       console.log("Niveles insertados correctamente");
-      this.presentAlert("Agregar", "Niveles insertados correctamente");
+      //this.presentAlert("Agregar", "Niveles insertados correctamente");
     } catch (e) {
       this.presentAlert('Error', 'Error al insertar niveles: ' + JSON.stringify(e));
     }
@@ -415,23 +434,27 @@ CREATE TABLE IF NOT EXISTS logros (
       { idnivel: 9, nombre: 'Subnivel 9.8', respuesta_correcta: 'Opción 2', imagen: 'nivel-nueve-8.png', completado: false },
     ];
   
-    for (let subnivel of subniveles) {
-      try {
-        await this.insertarSubnivel(subnivel.idnivel, subnivel.nombre, subnivel.respuesta_correcta, subnivel.imagen);
-      } catch (e) {
-        this.presentAlert('Error', 'Error al insertar subnivel: ' + JSON.stringify(e));
-      }
+    let insertions = 0; // Contador para insertar subniveles
+
+  for (let subnivel of subniveles) {
+    try {
+      await this.insertarSubnivel(subnivel.idnivel, subnivel.nombre, subnivel.respuesta_correcta, subnivel.imagen);
+      insertions++; // Aumenta el contador si la inserción es exitosa
+    } catch (e) {
+      this.presentAlert('Error', 'Error al insertar subnivel: ' + JSON.stringify(e));
+      return; // Detiene la ejecución si hay un error
     }
-    this.presentAlert("Agregar Subniveles", "Subniveles insertados correctamente");
   }
 
-  async insertarSubnivel(idnivel: number, nombre: string, respuesta_correcta: string, imagen: string) {
-    await this.database.executeSql(
-      'INSERT INTO subniveles(idnivel, nombre, respuesta_correcta, imagen) VALUES (?, ?, ?, ?)', 
-      [idnivel, nombre, respuesta_correcta, imagen]
-    );
+  //this.presentAlert("Agregar Subniveles", `Se insertaron correctamente ${insertions} subniveles.`);
+}
 
-  }
+async insertarSubnivel(idnivel: number, nombre: string, respuesta_correcta: string, imagen: string) {
+  await this.database.executeSql(
+    'INSERT INTO subniveles(idnivel, nombre, respuesta_correcta, imagen) VALUES (?, ?, ?, ?)', 
+    [idnivel, nombre, respuesta_correcta, imagen]
+  );
+}
 
    // Método para obtener los niveles
    async getNiveles(idusuario: number): Promise<Nivel[]> {
@@ -525,7 +548,7 @@ async actualizarAccesoNivel(idusuario: number, idnivel: number) {
             res.rows.item(i).nombre,
             res.rows.item(i).respuesta_correcta,
             res.rows.item(i).imagen,
-            res.rows.item(i).completado === false
+            res.rows.item(i).completado
           ));
         }
       }
@@ -555,7 +578,7 @@ async actualizarAccesoNivel(idusuario: number, idnivel: number) {
   async actualizarProgresoSubnivel(idusuario: number, idnivel: number, idsubnivel: number, completado: boolean) {
     try {
       console.log(`Actualizando estado de subnivel: usuario=${idusuario}, nivel=${idnivel}, subnivel=${idsubnivel}, completado=${completado}`);
-  
+      
       // Verificar si el progreso del subnivel ya está en progreso
       const res = await this.database.executeSql(
         'SELECT * FROM progreso WHERE idusuario = ? AND idnivel = ? AND idsubnivel = ?',
@@ -580,6 +603,7 @@ async actualizarAccesoNivel(idusuario: number, idnivel: number) {
       console.log('Información del error:', err);
     }
   }
+  
   
 
 async actualizarProgresoNivel(idusuario: number, idnivel: number, progreso: number, completado: boolean) {
@@ -710,6 +734,54 @@ async getLogrosUsuario(idusuario: number): Promise<Logro[]> {
     return [];
   }
 }
+
+// Método para insertar usuario admin usando la variable registroUsuario
+insertarUsuarioAdmin(): Promise<any> {
+  // Si deseas insertar la foto como NULL, debes modificar el query existente
+  const query = this.registroUsuario + ", NULL"; // Añadimos el valor NULL para la foto de perfil
+
+  return this.database.executeSql(query, [])
+    .then(res => {
+      console.log('Usuario admin insertado correctamente:', res);
+      return res;
+    })
+    .catch(err => {
+      console.error('Error al insertar usuario admin:', err);
+      throw err;
+    });
+}
+
+async changePassword(currentPassword: string, newPassword: string): Promise<boolean> {
+  try {
+    const userId = localStorage.getItem('userId'); // O lo que utilices para identificar al usuario
+    if (!userId) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    // Verifica si la contraseña actual es correcta
+    const res = await this.database.executeSql('SELECT * FROM usuario WHERE idusuario = ? AND password = ?', [userId, currentPassword]);
+    if (res.rows.length === 0) {
+      throw new Error('Contraseña actual incorrecta');
+    }
+
+    // Actualiza la contraseña
+    await this.database.executeSql('UPDATE usuario SET password = ? WHERE idusuario = ?', [newPassword, userId]);
+    return true;
+  } catch (error) {
+    console.error('Error al cambiar la contraseña:', error);
+    return false;
+  }
+}
+async actualizarNombre(idusuario: number, newName: string) {
+  try {
+    const query = 'UPDATE usuario SET nombre = ? WHERE idusuario = ?';
+    await this.database.executeSql(query, [newName, idusuario]);
+  } catch (error) {
+    console.error('Error al actualizar el nombre', error);
+    throw new Error('No se pudo actualizar el nombre');
+  }
+}
+
 
 
 

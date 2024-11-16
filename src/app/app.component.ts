@@ -1,28 +1,40 @@
-import { Component } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
 })
-export class AppComponent {
-  hideMenu: boolean = false;
+export class AppComponent implements OnInit {
+  public hideMenu: boolean = false;
 
-  constructor(private router: Router) {
-    this.router.events.subscribe(event => {
-      if (event instanceof NavigationEnd) {
-        this.hideMenu = event.url === '/login' || event.url === '/register' || event.url === '/recuperar';
-      }
+  constructor(private router: Router) {}
+
+  ngOnInit() {
+    this.router.events.subscribe(() => {
+      this.checkRoute();
     });
   }
 
-  onLogout() {
-    // Limpia el localStorage
-    localStorage.removeItem('user'); // Si usas almacenamiento local
-    sessionStorage.removeItem('user'); // Si usas almacenamiento de sesión
+  // Método para verificar si la ruta actual es una ruta de login, registro o recuperación
+  checkRoute() {
+    const currentRoute = this.router.url;
 
-    // Redirige a la página de inicio de sesión
+    // Rutas que no deben mostrar el menú
+    const forbiddenRoutes = ['/login', '/register', '/recuperar'];
+
+    // Si estamos en alguna de las rutas prohibidas, ocultamos el menú
+    if (forbiddenRoutes.includes(currentRoute)) {
+      this.hideMenu = true;
+    } else {
+      // En cualquier otra página, mostramos el menú
+      this.hideMenu = false;
+    }
+  }
+
+  onLogout() {
+    // Lógica para cerrar sesión, redirige al login o página de inicio
     this.router.navigate(['/login']);
   }
 }
