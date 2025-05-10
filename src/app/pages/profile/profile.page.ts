@@ -5,9 +5,10 @@ import { Camera, CameraResultType } from '@capacitor/camera';
 import { Logro } from '@services/logros'; // Ajusta la ruta según tu estructura de proyecto
 
 @Component({
-  selector: 'app-profile',
-  templateUrl: './profile.page.html',
-  styleUrls: ['./profile.page.scss'],
+    selector: 'app-profile',
+    templateUrl: './profile.page.html',
+    styleUrls: ['./profile.page.scss'],
+    standalone: false
 })
 export class ProfilePage implements OnInit {
   user: Usuario | undefined;

@@ -9,7 +9,7 @@
     <!-- Agregar logo aquí -->
     <img src="assets/img/Logo.jpg" alt="Logo" class="logo" />
 
-    <form (ngSubmit)="onRegister(form)" #form="ngForm">
+    <form (ngSubmit)="onRegister()" #form="ngForm">
       <ion-item>
         <ion-label position="floating">Nombre</ion-label>
         <ion-input type="text" name="name" required [(ngModel)]="name"></ion-input>

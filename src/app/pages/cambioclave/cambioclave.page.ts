@@ -4,9 +4,10 @@ import { AlertController, NavController } from '@ionic/angular';
 import { UserService } from '@services/database.service';  // Asegúrate de tener un servicio para gestionar el usuario
 
 @Component({
-  selector: 'app-cambioclave',
-  templateUrl: './cambioclave.page.html',
-  styleUrls: ['./cambioclave.page.scss'],
+    selector: 'app-cambioclave',
+    templateUrl: './cambioclave.page.html',
+    styleUrls: ['./cambioclave.page.scss'],
+    standalone: false
 })
 export class CambioclavePage implements OnInit {
 

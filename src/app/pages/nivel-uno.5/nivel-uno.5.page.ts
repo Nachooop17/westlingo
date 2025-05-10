@@ -6,9 +6,10 @@ import { Subnivel } from '@services/subniveles'; // Importar Subnivel
 import { Nivel } from '@services/niveles';
 
 @Component({
-  selector: 'app-nivel-uno-5',
-  templateUrl: './nivel-uno.5.page.html',
-  styleUrls: ['./nivel-uno.5.page.scss'],
+    selector: 'app-nivel-uno-5',
+    templateUrl: './nivel-uno.5.page.html',
+    styleUrls: ['./nivel-uno.5.page.scss'],
+    standalone: false
 })
 export class NivelUno5Page implements OnInit {
   public progress = 0;

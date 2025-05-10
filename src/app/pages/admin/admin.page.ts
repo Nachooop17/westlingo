@@ -3,9 +3,10 @@ import { UserService } from '@services/database.service';
 import { Usuario } from '@services/users';
 
 @Component({
-  selector: 'app-admin',
-  templateUrl: './admin.page.html',
-  styleUrls: ['./admin.page.scss'],
+    selector: 'app-admin',
+    templateUrl: './admin.page.html',
+    styleUrls: ['./admin.page.scss'],
+    standalone: false
 })
 export class AdminPage implements OnInit {
   usuarios: Usuario[] = [];

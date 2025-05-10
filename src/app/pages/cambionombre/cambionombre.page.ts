@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { UserService } from '@services/database.service'; // Asegúrate de importar el servicio de usuario
 
 @Component({
-  selector: 'app-cambionombre',
-  templateUrl: './cambionombre.page.html',
-  styleUrls: ['./cambionombre.page.scss'],
+    selector: 'app-cambionombre',
+    templateUrl: './cambionombre.page.html',
+    styleUrls: ['./cambionombre.page.scss'],
+    standalone: false
 })
 export class CambionombrePage implements OnInit {
   newName: string = ''; // Variable para almacenar el nuevo nombre

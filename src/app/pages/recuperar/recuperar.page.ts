@@ -3,9 +3,10 @@ import { UserService } from '@services/database.service';
 import { AlertController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-recuperar',
-  templateUrl: './recuperar.page.html',
-  styleUrls: ['./recuperar.page.scss'],
+    selector: 'app-recuperar',
+    templateUrl: './recuperar.page.html',
+    styleUrls: ['./recuperar.page.scss'],
+    standalone: false
 })
 export class RecuperarPage {
   email: string = '';

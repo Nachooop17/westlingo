@@ -4,9 +4,10 @@ import { Usuario } from '@services/users';
 import { Nivel } from '@services/niveles'; // Asegúrate de importar tu modelo de niveles
 
 @Component({
-  selector: 'app-user-management',
-  templateUrl: './user-management.page.html',
-  styleUrls: ['./user-management.page.scss'],
+    selector: 'app-user-management',
+    templateUrl: './user-management.page.html',
+    styleUrls: ['./user-management.page.scss'],
+    standalone: false
 })
 export class UserManagementPage implements OnInit {
   usuarios: Usuario[] = [];

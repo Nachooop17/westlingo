@@ -5,9 +5,10 @@ import { Usuario } from '@services/users';
 import { AlertController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-admin-usuarios',
-  templateUrl: './admin-usuarios.page.html',
-  styleUrls: ['./admin-usuarios.page.scss'],
+    selector: 'app-admin-usuarios',
+    templateUrl: './admin-usuarios.page.html',
+    styleUrls: ['./admin-usuarios.page.scss'],
+    standalone: false
 })
 export class AdminUsuariosPage implements OnInit {
   usuario: Usuario | null = null;
