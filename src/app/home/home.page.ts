@@ -1,95 +1,124 @@
-import { Component, OnInit } from '@angular/core';
-import { UserService } from '@services/database.service';
-import { Nivel } from '@services/niveles';
+// src/app/pages/home/home.page.ts
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController } from '@ionic/angular'; // Asegúrate de importar esto
+import { AlertController } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 
+// --- Importaciones Actualizadas ---
+import { AuthService } from '@services/auth.service';
+import { DataService } from '@services/data.service';
+import { Nivel } from '@services/niveles';
+import { User } from '@supabase/supabase-js';
 
 @Component({
-    selector: 'app-home',
-    templateUrl: './home.page.html',
-    styleUrls: ['./home.page.scss'],
-    standalone: false
+  selector: 'app-home',
+  templateUrl: './home.page.html',
+  styleUrls: ['./home.page.scss'],
+  standalone: false // Correcto para no ser standalone
+  // No hay array 'imports' aquí
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, OnDestroy {
   niveles: Nivel[] = [];
-  private idusuario: number = 0;
+  currentUser: User | null = null;
+  isLoading: boolean = true;
+  private userSubscription: Subscription | null = null;
 
   constructor(
-    private userService: UserService, 
+    private authService: AuthService,
+    private dataService: DataService,
     private router: Router,
-    private alertController: AlertController // Asegúrate de agregar esto
+    private alertController: AlertController
   ) {}
 
   ngOnInit() {
-    this.idusuario = Number(localStorage.getItem('userId'));
-    if (!this.idusuario) {
-      alert('No se ha encontrado un usuario logeado');
-      this.router.navigate(['/login']);
+    this.subscribeToUser();
+  }
+
+  ngOnDestroy() {
+    this.userSubscription?.unsubscribe();
+  }
+
+  subscribeToUser() {
+    this.isLoading = true;
+    this.niveles = [];
+    this.userSubscription = this.authService.currentUser$.subscribe({
+      next: (user) => {
+        if (user) {
+          if (!this.currentUser || this.currentUser.id !== user.id) {
+            console.log('HomePage: Usuario autenticado detectado - UID:', user.id);
+            this.currentUser = user;
+            this.loadNivelesFromSupabase(this.currentUser.id);
+            // La llamada a ensureLevelOneAccessInSupabase aquí es opcional/respaldo,
+            // ya que el trigger de BD debería manejarlo al crear el usuario.
+            // this.ensureLevelOneAccessInSupabase(this.currentUser.id);
+          } else {
+            this.isLoading = false; // Mismo usuario, solo termina la carga
+          }
+        } else {
+          console.log('HomePage: No hay usuario autenticado, redirigiendo a login...');
+          this.currentUser = null;
+          this.isLoading = false;
+          if (this.router.url !== '/login') {
+            this.router.navigate(['/login']);
+          }
+        }
+      },
+      error: (error) => {
+         console.error('HomePage: Error en la suscripción a currentUser$:', error);
+         this.isLoading = false;
+         this.currentUser = null;
+         this.router.navigate(['/login']);
+      }
+   });
+  }
+
+  async loadNivelesFromSupabase(userId: string) {
+    console.log('HomePage: Cargando niveles desde Supabase...');
+    this.isLoading = true;
+    try {
+      this.niveles = await this.dataService.getNivelesForUser(userId);
+      console.log('HomePage: Niveles recuperados:', this.niveles);
+    } catch (error: any) {
+      console.error('HomePage: Error al cargar niveles:', error);
+      await this.presentAlert('Error de Carga', `No se pudieron cargar los niveles: ${error?.message || 'Error desconocido'}`);
+      this.niveles = [];
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  // Opcional: si el trigger no fuera suficiente o como respaldo.
+  async ensureLevelOneAccessInSupabase(userId: string) {
+    try {
+      // Asumiendo que el nivel con numero_nivel 1 tiene id=1 en tu tabla 'niveles'
+      await this.dataService.updateNivelAccess(userId, 1, true);
+      console.log('HomePage: Acceso asegurado para nivel 1.');
+    } catch (error) {
+      console.error('HomePage: Error asegurando acceso a nivel 1:', error);
+    }
+  }
+
+  // --- MÉTODO irANivel CORREGIDO ---
+  irANivel(nivelSeleccionado: Nivel) { // Acepta el objeto Nivel completo
+    // La validación de acceso ya está en el template (botón [disabled] y (click))
+    // pero una comprobación aquí es una buena práctica.
+    if (!nivelSeleccionado?.acceso) {
+      this.presentAlert('Acceso Bloqueado', 'Completa los niveles anteriores para desbloquear este.');
       return;
     }
-  
-    this.userService.dbState().subscribe((ready) => {
-      if (ready) {
-        this.userService.actualizarAccesoNivel(this.idusuario,1);
-        this.userService.getNiveles(this.idusuario).then((niveles) => {
-          console.log('Niveles Recuperados:', JSON.stringify(niveles));
-          this.niveles = niveles;
-        });
-      }
-    });
-  }
-  
 
-  irANivel(idnivel: number) {
-    const nivel = this.niveles.find(n => n.idnivel === idnivel);
-    console.log(`Nivel ${idnivel}: `, nivel); // Verificar el nivel y su propiedad acceso
-    if (nivel && nivel.acceso) {
-      let ruta = '';
-      switch(idnivel) {
-        case 1: ruta = '/nivel-uno.1'; break;
-        case 2: ruta = '/nivel-uno.2'; break;
-        case 3: ruta = '/nivel-uno.3'; break;
-        case 4: ruta = '/nivel-uno.4'; break;
-        case 5: ruta = '/nivel-uno.5'; break;
-        case 6: ruta = '/nivel-uno.6'; break;
-        case 7: ruta = '/nivel-uno.7'; break;
-        case 8: ruta = '/nivel-uno.8'; break;
-        case 9: ruta = '/nivel-uno.9'; break;
-        default: ruta = `/nivel-${idnivel}`;
-      }
-      this.router.navigate([ruta]); // Navegar a la ruta correcta
-    } else {
-      this.presentAlert('Acceso Denegado', 'Este nivel está bloqueado.');
-    }
+    console.log(`HomePage: Navegando a level-detail con ID: ${nivelSeleccionado.idnivel}`);
+    // Navega a la ruta genérica '/level-detail' pasando el idnivel como parámetro
+    this.router.navigate(['/level-detail', nivelSeleccionado.idnivel]);
   }
 
   async presentAlert(header: string, message: string) {
     const alert = await this.alertController.create({
       header,
       message,
-      buttons: ['OK']
+      buttons: ['OK'],
+      backdropDismiss: false
     });
     await alert.present();
   }
-
-  debugAccess() {
-    this.userService.database.executeSql(
-      `SELECT DISTINCT n.* FROM niveles n 
-       JOIN progreso p ON n.idnivel = p.idnivel 
-       WHERE p.idusuario = ?`,
-      [this.idusuario]
-    )
-    .then((res) => {
-      const niveles = [];
-      for (let i = 0; i < res.rows.length; i++) {
-        niveles.push(res.rows.item(i));
-      }
-      console.log('Debug Acceso desde la base de datos:', JSON.stringify(niveles, null, 2));
-    })
-    .catch(e => console.log('Error en debugAccess:', JSON.stringify(e)));
-  }
-  
-  
-  
 }

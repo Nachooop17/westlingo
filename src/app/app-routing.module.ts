@@ -72,6 +72,11 @@ const routes: Routes = [
     path: 'cambionombre',
     loadChildren: () => import('./pages/cambionombre/cambionombre.module').then( m => m.CambionombrePageModule)
   },
+  
+  {
+    path: 'level-detail/:id', // <--- NUEVA RUTA con parámetro :id
+    loadChildren: () => import('./pages/level-detail/level-detail.module').then( m => m.LevelDetailPageModule)
+  },
   {
     path: '**',
     loadChildren: () => import('./pages/notfound/notfound.module').then( m => m.NotfoundPageModule)

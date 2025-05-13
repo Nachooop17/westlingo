@@ -15,7 +15,8 @@ import { BehaviorSubject, Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  private supabase: SupabaseClient;
+  // 
+  public readonly supabase: SupabaseClient; // Hazlo público y de solo lectura
 
   private _currentUser = new BehaviorSubject<User | null>(null);
   private _currentSession = new BehaviorSubject<Session | null>(null);

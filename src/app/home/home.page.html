@@ -1,34 +1,48 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-title>
-      Niveles
+  <ion-toolbar color="primary"> <ion-title>
+      Niveles Westlingo
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  
-  <!--<ion-button expand="full" (click)="debugAccess()">Debug Acceso</ion-button>-->
-  
-  <ng-container *ngIf="niveles && niveles.length > 0">
-    <ion-card *ngFor="let nivel of niveles"
-              [color]="nivel.acceso === 'true' ? 'secondary' : 'light'" 
-              (click)="nivel.acceso === 'true' ? irANivel(nivel.idnivel) : presentAlert('Acceso Denegado', 'Este nivel está bloqueado.')"
-              class="level-card">
-      <ion-card-header>
-        <ion-card-title>{{ nivel.nombre }}</ion-card-title>
-        <ion-card-subtitle>Dificultad: {{ nivel.dificultad }}</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-icon [name]="nivel.acceso === 'true' ? 'lock-open-outline' : 'lock-closed-outline'" 
-                  slot="end"></ion-icon>
-      </ion-card-content>
-    </ion-card>
-  </ng-container>
+<ion-content [fullscreen]="true" class="ion-padding"> <div *ngIf="isLoading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando niveles...</p>
+  </div>
 
-  <ng-container *ngIf="niveles.length === 0">
-    <ion-item>
-      <ion-label>No hay niveles disponibles</ion-label>
-    </ion-item>
-  </ng-container>
+  <div *ngIf="!isLoading">
+    <ng-container *ngIf="!niveles || niveles.length === 0">
+      <ion-item lines="none">
+        <ion-label class="ion-text-center">No hay niveles disponibles o no se pudieron cargar.</ion-label>
+      </ion-item>
+    </ng-container>
+
+    <ng-container *ngIf="niveles && niveles.length > 0">
+      <ion-list>
+        <ion-item *ngFor="let nivel of niveles"
+                  [button]="nivel.acceso"
+                  [disabled]="!nivel.acceso"
+                  (click)="irANivel(nivel)"
+                  lines="inset">
+
+          <ion-icon [name]="nivel.acceso ? 'lock-open-outline' : 'lock-closed-outline'"
+                    [color]="nivel.acceso ? 'success' : 'medium'"
+                    slot="start"
+                    aria-hidden="true">
+          </ion-icon>
+
+          <ion-label>
+            <h2>{{ nivel.nombre }}</h2>
+            <p>Dificultad: {{ nivel.dificultad }} <span *ngIf="!nivel.acceso"> (Bloqueado)</span>
+            </p>
+          </ion-label>
+
+          <ion-icon *ngIf="nivel.acceso" name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+
+        </ion-item>
+      </ion-list>
+
+      </ng-container>
+  </div>
+
 </ion-content>
