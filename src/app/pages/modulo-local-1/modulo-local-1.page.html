@@ -1,0 +1,15 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Detección de Gestos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="video-container">
+    <video #videoElement autoplay playsinline></video>
+  </div>
+
+  <div class="gesture-detected">
+    <h2 *ngIf="gestureDetected">Gesto detectado: {{ gestureDetected }}</h2>
+  </div>
+</ion-content>

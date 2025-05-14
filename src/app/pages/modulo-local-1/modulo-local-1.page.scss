@@ -1,0 +1,19 @@
+/* filepath: c:\Users\alexa\Desktop\pro.gitv2\westlingo\src\app\pages\modulo-local-1\modulo-local-1.page.scss */
+.video-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+}
+
+video {
+  width: 100%;
+  max-width: 400px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+}
+
+.gesture-detected {
+  text-align: center;
+  margin-top: 20px;
+}

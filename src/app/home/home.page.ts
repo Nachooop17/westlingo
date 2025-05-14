@@ -22,6 +22,15 @@ export class HomePage implements OnInit, OnDestroy {
   currentUser: User | null = null;
   isLoading: boolean = true;
   private userSubscription: Subscription | null = null;
+  modulosLocales = [
+    {
+      id: 'modulo1',
+      nombre: 'Módulo Camara',
+      descripcion: 'Modulo CAMARA PRUEBA .',
+      ruta: '/modulo'
+    }
+  ];
+
 
   constructor(
     private authService: AuthService,
@@ -37,7 +46,13 @@ export class HomePage implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.userSubscription?.unsubscribe();
   }
-
+irAModuloLocal(ruta: string) {
+  console.log(`Navegando a: ${ruta}`);
+  this.router.navigate(['/modulo']).then(
+    success => console.log('Navegación exitosa'),
+    error => console.error('Error en la navegación:', error)
+  );
+}
   subscribeToUser() {
     this.isLoading = true;
     this.niveles = [];
