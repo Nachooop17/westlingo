@@ -1,0 +1,99 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ isLoading ? 'Cargando...' : (sublevelData?.nombre || 'Actividad') }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div *ngIf="isLoading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando actividad...</p>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="ion-text-center ion-padding error-message">
+    <ion-icon name="alert-circle-outline" color="danger" style="font-size: 2.5em;"></ion-icon>
+    <p>{{ errorMessage }}</p>
+    <ion-button (click)="retryLoad()" fill="outline" color="primary">Reintentar</ion-button>
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage && sublevelData && sublevelData.contenido" [ngSwitch]="sublevelData.contenido.tipo">
+
+    <ng-container *ngSwitchCase="'quiz_imagen_opciones_multiples'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>{{ sublevelData.contenido.enunciado || sublevelData.nombre }}</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <img *ngIf="publicImageUrl" [src]="publicImageUrl" alt="Imagen del Quiz" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
+          <ion-list>
+            <ion-item *ngFor="let opcion of sublevelData.contenido.opciones"
+                      button
+                      (click)="manejarRespuestaQuiz(opcion)"
+                      [disabled]="sublevelData.usuario_completado">
+              <ion-label>{{ opcion.id }}) {{ opcion.texto }}</ion-label>
+            </ion-item>
+          </ion-list>
+          <p *ngIf="sublevelData.usuario_completado" class="ion-text-success ion-padding-top">
+            ¡Ya completaste este quiz! Puntaje: {{ sublevelData.usuario_puntaje ?? 'N/A' }}
+          </p>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'texto_simple'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>{{ sublevelData.contenido.titulo || sublevelData.nombre }}</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div *ngFor="let parrafo of sublevelData.contenido.parrafos">
+            <p>{{ parrafo }}</p>
+          </div>
+          <ion-button *ngIf="!sublevelData.usuario_completado"
+                      expand="block"
+                      (click)="manejarRespuestaQuiz({ esCorrecta: true })" 
+                      class="ion-margin-top">
+            Marcar como leído/completado
+          </ion-button>
+          <p *ngIf="sublevelData.usuario_completado" class="ion-text-success ion-padding-top">
+            ¡Lección completada!
+          </p>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'imagen_interactiva'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>{{ sublevelData.contenido.titulo || sublevelData.nombre }}</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <img *ngIf="publicImageUrl" [src]="publicImageUrl" alt="Imagen interactiva" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
+          <p *ngIf="sublevelData.contenido.pregunta"><strong>{{ sublevelData.contenido.pregunta }}</strong></p>
+          <p *ngIf="sublevelData.contenido.pieDeFoto">{{ sublevelData.contenido.pieDeFoto }}</p>
+          <ion-button *ngIf="!sublevelData.usuario_completado"
+                      expand="block"
+                      (click)="manejarRespuestaQuiz({ esCorrecta: true })" 
+                      class="ion-margin-top">
+            Marcar como visto/completado
+          </ion-button>
+          <p *ngIf="sublevelData.usuario_completado" class="ion-text-success ion-padding-top">
+            ¡Actividad completada!
+          </p>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+
+
+    <ng-container *ngSwitchDefault>
+      <p>Contenido de tipo desconocido: {{ sublevelData.contenido.tipo }}</p>
+      <pre>{{ sublevelData.contenido | json }}</pre>
+    </ng-container>
+
+  </div>
+</ion-content>

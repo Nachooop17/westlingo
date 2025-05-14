@@ -4,17 +4,17 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { CambionombrePageRoutingModule } from './cambionombre-routing.module';
+import { SublevelPageRoutingModule } from './sublevel-routing.module';
 
-import { CambionombrePage } from './cambionombre.page';
+import { SublevelPage } from './sublevel.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    CambionombrePageRoutingModule
+    SublevelPageRoutingModule
   ],
-  declarations: [CambionombrePage]
+  declarations: [SublevelPage]
 })
-export class CambionombrePageModule {}
+export class SublevelPageModule {}

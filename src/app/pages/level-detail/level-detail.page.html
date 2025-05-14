@@ -1,13 +1,81 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>level-detail</ion-title>
+  <ion-toolbar color="primary"> <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+      </ion-buttons>
+    <ion-title>
+      {{ isLoading ? 'Cargando Nivel...' : (levelDetails?.nombre || 'Detalle del Nivel') }}
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">level-detail</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div *ngIf="isLoading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Cargando contenido del nivel...</p>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="ion-text-center ion-padding error-message-container">
+    <ion-icon name="alert-circle-outline" color="danger" class="error-icon"></ion-icon>
+    <p class="error-text">{{ errorMessage }}</p>
+    <ion-button (click)="retryLoadData()" fill="outline" color="primary" class="ion-margin-top">
+      Reintentar
+    </ion-button>
+    <ion-button (click)="goBack()" fill="clear" color="medium">
+      Volver a Niveles
+    </ion-button>
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage && levelDetails">
+
+    <ion-card class="level-detail-card">
+      <ion-card-header>
+        <ion-card-title>{{ levelDetails.nombre }}</ion-card-title>
+        <ion-card-subtitle *ngIf="levelDetails.dificultad || levelDetails.total_subniveles">
+          <span *ngIf="levelDetails.dificultad">Dificultad: {{ levelDetails.dificultad }}</span>
+          <span *ngIf="levelDetails.dificultad && levelDetails.total_subniveles"> | </span>
+          <span *ngIf="levelDetails.total_subniveles">Subniveles: {{ levelDetails.total_subniveles }}</span>
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content *ngIf="levelDetails.descripcion">
+        {{ levelDetails.descripcion }}
+      </ion-card-content>
+    </ion-card>
+
+    <ion-list-header *ngIf="subniveles && subniveles.length > 0">
+      <ion-label color="secondary">Actividades del Nivel</ion-label>
+    </ion-list-header>
+
+    <ion-list *ngIf="subniveles && subniveles.length > 0; else noSubnivelesTemplate">
+      <ion-item *ngFor="let subnivel of subniveles; let i = index" 
+                lines="inset" 
+                button 
+                (click)="irASubnivel(subnivel)" 
+                detail="true">
+        <ion-icon [name]="subnivel.usuario_completado ? 'checkmark-circle' : 'ellipse-outline'"
+                  [color]="subnivel.usuario_completado ? 'success' : 'medium'"
+                  slot="start"
+                  aria-label="Estado del subnivel"></ion-icon>
+        <ion-label>
+          <h2>{{ subnivel.numero_subnivel }}. {{ subnivel.nombre }}</h2>
+          <p *ngIf="subnivel.usuario_completado" class="completed-text">
+            Completado
+            <span *ngIf="subnivel.usuario_puntaje !== null && subnivel.usuario_puntaje !== undefined">
+              - Puntaje: {{ subnivel.usuario_puntaje }}
+            </span>
+          </p>
+          <p *ngIf="!subnivel.usuario_completado" class="pending-text">
+            Pendiente
+          </p>
+        </ion-label>
+        </ion-item>
+    </ion-list>
+
+    <ng-template #noSubnivelesTemplate>
+      <div *ngIf="!isLoading && levelDetails" class="ion-text-center ion-padding">
+        <ion-icon name="information-circle-outline" color="medium" style="font-size: 2em;"></ion-icon>
+        <p>Este nivel aún no tiene actividades o subniveles disponibles.</p>
+      </div>
+    </ng-template>
+
+  </div>
 </ion-content>

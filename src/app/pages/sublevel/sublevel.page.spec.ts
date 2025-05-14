@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ProfilePage } from './profile.page';
+import { SublevelPage } from './sublevel.page';
 
-describe('ProfilePage', () => {
-  let component: ProfilePage;
-  let fixture: ComponentFixture<ProfilePage>;
+describe('SublevelPage', () => {
+  let component: SublevelPage;
+  let fixture: ComponentFixture<SublevelPage>;
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ProfilePage);
+    fixture = TestBed.createComponent(SublevelPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
