@@ -94,7 +94,7 @@ export class SublevelPage implements OnInit, OnDestroy {
         // Si el contenido tiene una imagenUrl y usas Supabase Storage:
         if (this.sublevelData.contenido?.imagenUrl) {
           const { data } = this.authService.supabase.storage // Asumiendo acceso al cliente supabase
-            .from('imagenes_subniveles') // CAMBIA ESTO por tu bucket real
+            .from('niveluno') // CAMBIA ESTO por tu bucket real
             .getPublicUrl(this.sublevelData.contenido.imagenUrl);
           this.publicImageUrl = data.publicUrl;
         }

@@ -1,0 +1,163 @@
+ion-header {
+  ion-toolbar {
+    --background: #22272e; // Un gris oscuro elegante
+    --color: #f0f0f0; // Gris claro para el texto principal
+    ion-buttons[slot="start"] {
+      ion-back-button {
+        --color: #f0f0f0;
+      }
+    }
+    ion-title {
+      font-weight: 500; // Ligeramente más delgado para un toque moderno
+    }
+  }
+}
+
+ion-content {
+  --background: #191c22; // Otro tono oscuro para el fondo del contenido
+
+  .ion-padding {
+    padding: 16px;
+  }
+
+  .ion-text-center {
+    text-align: center;
+  }
+
+  .ion-margin-top {
+    margin-top: 16px;
+  }
+
+  // Estilos para el indicador de carga
+  .ion-spinner {
+    width: 48px;
+    height: 48px;
+    --color: var(--ion-color-secondary); // Un acento de color
+  }
+
+  .error-message-container {
+    padding: 20px;
+    background-color: #282e38; // Un tono más claro del fondo oscuro
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+    .error-icon {
+      font-size: 2em;
+      margin-bottom: 8px;
+      color: var(--ion-color-danger); // Manteniendo el rojo para el error
+    }
+
+    .error-text {
+      color: #e0e0e0;
+      margin-bottom: 16px;
+    }
+  }
+
+  // Estilos para la tarjeta de detalles del nivel
+  .level-detail-card {
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+    background-color: #282e38;
+
+    ion-card-header {
+      background-color: transparent;
+      border-bottom: 1px solid #383f4d;
+      padding: 16px;
+
+      ion-card-title {
+        font-size: 1.5em;
+        font-weight: 600;
+        color: #f0f0f0;
+        margin-bottom: 4px;
+      }
+
+      ion-card-subtitle {
+        color: #a0a0a0; // Un gris más oscuro para el subtítulo
+        font-size: 0.9em;
+      }
+    }
+
+    ion-card-content {
+      padding: 16px;
+      color: #d0d0d0;
+    }
+  }
+
+  // Estilos para el encabezado de la lista de subniveles
+  ion-list-header {
+    padding: 16px;
+    ion-label {
+      font-weight: 500;
+      font-size: 1.1em;
+      color: var(--ion-color-secondary); // Un acento de color para el encabezado
+    }
+  }
+
+  // Estilos para la lista de subniveles
+  ion-list {
+    background: transparent;
+
+    ion-item {
+      --background: #282e38;
+      --border-color: #383f4d;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      --color: #e0e0e0; // Texto principal de los items
+
+      ion-icon[slot="start"] {
+        font-size: 1.3em;
+        margin-right: 12px;
+        // Los colores de los iconos se mantienen para indicar el estado
+        &[name="checkmark-circle"] {
+          color: var(--ion-color-success);
+        }
+        &[name="ellipse-outline"] {
+          color: var(--ion-color-medium);
+        }
+      }
+
+      ion-label {
+        h2 {
+          font-size: 1em;
+          font-weight: 500;
+          color: #f0f0f0;
+          margin-bottom: 4px;
+        }
+        p {
+          font-size: 0.85em;
+          margin-top: 2px;
+
+          &.completed-text {
+            color: var(--ion-color-success);
+            font-weight: 400;
+          }
+
+          &.pending-text {
+            color: #a0a0a0;
+          }
+
+          span {
+            font-weight: normal;
+            color: var(--ion-color-secondary);
+          }
+        }
+      }
+    }
+  }
+
+  // Estilos para el template de "no subniveles"
+  ng-template {
+    .ion-text-center {
+      ion-icon {
+        font-size: 2em;
+        margin-bottom: 10px;
+        color: #a0a0a0;
+      }
+      p {
+        color: #a0a0a0;
+      }
+    }
+  }
+}
