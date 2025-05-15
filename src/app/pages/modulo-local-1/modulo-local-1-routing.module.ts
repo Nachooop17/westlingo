@@ -9,7 +9,7 @@ const routes: Routes = [
     component: ModuloLocal1Page
   }
 ];
-console.log('ModuloLocal1PageRoutingModule: Rutas cargadas'); // Agrega este log aquí
+console.log('ModuloLocal1PageRoutingModule: Rutas cargadas'); 
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],

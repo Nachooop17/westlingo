@@ -83,23 +83,55 @@ export class SublevelPage implements OnInit, OnDestroy {
     const loading = await this.loadingCtrl.create({ message: 'Cargando actividad...' });
     await loading.present();
     this.errorMessage = null;
+    this.publicImageUrl = null; // Limpiar imagen previa
+    this.sublevelData = null;   // Limpiar datos previos
+
     try {
-      // Necesitarás un método en DataService como 'getSublevelByIdWithProgress'
       this.sublevelData = await this.dataService.getSublevelByIdWithProgress(sublevelId, userId);
 
       if (!this.sublevelData) {
-        this.errorMessage = `Subnivel ID ${sublevelId} no encontrado.`;
+        this.errorMessage = `Subnivel con ID ${sublevelId} no encontrado.`;
       } else {
-        console.log('SublevelPage: Datos del subnivel cargados:', this.sublevelData);
+        console.log('SublevelPage: Datos del subnivel cargados:', JSON.stringify(this.sublevelData, null, 2));
+
         // Si el contenido tiene una imagenUrl y usas Supabase Storage:
-        if (this.sublevelData.contenido?.imagenUrl) {
-          const { data } = this.authService.supabase.storage // Asumiendo acceso al cliente supabase
-            .from('imagenes_subniveles') // CAMBIA ESTO por tu bucket real
-            .getPublicUrl(this.sublevelData.contenido.imagenUrl);
-          this.publicImageUrl = data.publicUrl;
+        if (this.sublevelData.contenido?.imagenUrl && typeof this.sublevelData.contenido.imagenUrl === 'string') {
+          const imagePath = this.sublevelData.contenido.imagenUrl;
+          const BUCKET_NAME = 'niveluno'; // Nombre correcto de tu bucket
+
+          console.log(`SublevelPage: Intentando obtener URL pública para: Bucket='${BUCKET_NAME}', Path='${imagePath}'`);
+
+          // ---- CORRECCIÓN AQUÍ ----
+          try {
+            const { data } = this.authService.supabase.storage // 'getPublicUrl' no devuelve 'error'
+              .from(BUCKET_NAME)
+              .getPublicUrl(imagePath);
+
+            if (data && data.publicUrl) {
+              this.publicImageUrl = data.publicUrl;
+              console.log('SublevelPage: URL pública de la imagen obtenida:', this.publicImageUrl);
+            } else {
+              // Esto puede pasar si el path es inválido de una forma que getPublicUrl no puede manejar,
+              // o si la respuesta de Supabase es inesperada.
+              console.error(`SublevelPage: No se pudo obtener la URL pública (data o data.publicUrl es null/undefined). Bucket: ${BUCKET_NAME}, Path: ${imagePath}.`);
+              this.publicImageUrl = null;
+              // Podrías añadir un mensaje a errorMessage si la imagen es vital.
+              // this.errorMessage = (this.errorMessage ? this.errorMessage + " " : "") + "No se pudo generar la URL de la imagen.";
+            }
+          } catch (storageConstructionError: any) {
+            // Este catch es para errores en la construcción de la URL de Storage en sí (raro si el path es un string simple)
+            console.error('SublevelPage: Error construyendo la URL pública de Supabase Storage:', storageConstructionError);
+            this.publicImageUrl = null;
+            this.errorMessage = (this.errorMessage ? this.errorMessage + " " : "") + `Error con la URL de imagen: ${storageConstructionError.message}`;
+          }
+          // -------------------------
+
+        } else {
+          console.log('SublevelPage: No hay imagenUrl en el contenido del subnivel o no es un string.');
+          this.publicImageUrl = null;
         }
       }
-    } catch (error: any) {
+    } catch (error: any) { // Error de dataService.getSublevelByIdWithProgress
       console.error('SublevelPage: Error cargando contenido del subnivel:', error);
       this.errorMessage = `Error al cargar la actividad: ${error?.message || 'Error desconocido'}`;
     } finally {

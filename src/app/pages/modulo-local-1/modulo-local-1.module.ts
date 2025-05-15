@@ -4,9 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { ModuloLocal1PageRoutingModule } from './modulo-local-1-routing.module';
 import { Routes } from '@angular/router';
-import { ModuloLocal1Page } from './modulo-local-1.page'; // Importa el componente standalone
-
-
+import { ModuloLocal1Page } from './modulo-local-1.page'; 
 
 
 @NgModule({
