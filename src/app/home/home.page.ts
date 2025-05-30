@@ -1,27 +1,27 @@
 // src/app/pages/home/home.page.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular'; // Importar NavController para ionViewWillEnter
 import { Subscription } from 'rxjs';
 
 // --- Importaciones Actualizadas ---
 import { AuthService } from '@services/auth.service';
-import { DataService } from '@services/data.service';
-import { Nivel } from '@services/niveles';
+import { DataService, Nivel } from '@services/data.service'; // Asegúrate de importar Nivel desde data.service
 import { User } from '@supabase/supabase-js';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
-  standalone: false // Correcto para no ser standalone
-  // No hay array 'imports' aquí
+  standalone: false
 })
 export class HomePage implements OnInit, OnDestroy {
   niveles: Nivel[] = [];
   currentUser: User | null = null;
   isLoading: boolean = true;
   private userSubscription: Subscription | null = null;
+  private levelProgressSubscription: Subscription | null = null; // Suscripción para el progreso de niveles en tiempo real
+
   modulosLocales = [
     {
       id: 'modulo1',
@@ -31,60 +31,101 @@ export class HomePage implements OnInit, OnDestroy {
     }
   ];
 
-
   constructor(
     private authService: AuthService,
     private dataService: DataService,
     private router: Router,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private navCtrl: NavController // Inyectar NavController
   ) {}
 
   ngOnInit() {
-    this.subscribeToUser();
+    // ngOnInit se usa para inicializar suscripciones que duran la vida del componente
+    // La carga inicial de datos se moverá a ionViewWillEnter
+    this.subscribeToUser(); 
+  }
+
+  // ionViewWillEnter se ejecuta cada vez que la página está a punto de volverse activa
+  ionViewWillEnter() {
+    console.log('HomePage: ionViewWillEnter - Recargando datos de niveles.');
+    // Asegurarse de que el usuario esté disponible antes de cargar los niveles
+    if (this.currentUser) {
+      this.loadNivelesFromSupabase(this.currentUser.id);
+      // También re-suscribirse al progreso de niveles si no lo está (o si se desuscribió en onDidLeave)
+      this.subscribeToLevelProgress(this.currentUser.id);
+    } else {
+      // Si no hay usuario, y no estamos ya en la ruta de login, redirigir
+      if (this.router.url !== '/login') {
+        this.router.navigate(['/login']);
+      }
+    }
   }
 
   ngOnDestroy() {
     this.userSubscription?.unsubscribe();
+    this.levelProgressSubscription?.unsubscribe(); // Desuscribirse al destruir el componente
   }
-irAModuloLocal(ruta: string) {
-  console.log(`Navegando a: ${ruta}`);
-  this.router.navigate(['/modulo']).then(
-    success => console.log('Navegación exitosa'),
-    error => console.error('Error en la navegación:', error)
-  );
-}
+
+  irAModuloLocal(ruta: string) {
+    console.log(`Navegando a: ${ruta}`);
+    this.router.navigate(['/modulo']).then(
+      success => console.log('Navegación exitosa'),
+      error => console.error('Error en la navegación:', error)
+    );
+  }
+
   subscribeToUser() {
-    this.isLoading = true;
-    this.niveles = [];
+    // Esta suscripción es para el estado de autenticación del usuario
     this.userSubscription = this.authService.currentUser$.subscribe({
       next: (user) => {
         if (user) {
+          // Solo si el usuario cambia o es la primera vez que se detecta
           if (!this.currentUser || this.currentUser.id !== user.id) {
             console.log('HomePage: Usuario autenticado detectado - UID:', user.id);
             this.currentUser = user;
-            this.loadNivelesFromSupabase(this.currentUser.id);
-            // La llamada a ensureLevelOneAccessInSupabase aquí es opcional/respaldo,
-            // ya que el trigger de BD debería manejarlo al crear el usuario.
-            // this.ensureLevelOneAccessInSupabase(this.currentUser.id);
-          } else {
-            this.isLoading = false; // Mismo usuario, solo termina la carga
+            // La carga de niveles inicial y la suscripción a progreso se manejan en ionViewWillEnter
           }
         } else {
           console.log('HomePage: No hay usuario autenticado, redirigiendo a login...');
           this.currentUser = null;
           this.isLoading = false;
+          // Desuscribirse de todo lo relacionado con el usuario anterior
+          this.levelProgressSubscription?.unsubscribe(); 
           if (this.router.url !== '/login') {
             this.router.navigate(['/login']);
           }
         }
       },
       error: (error) => {
-         console.error('HomePage: Error en la suscripción a currentUser$:', error);
-         this.isLoading = false;
-         this.currentUser = null;
-         this.router.navigate(['/login']);
+          console.error('HomePage: Error en la suscripción a currentUser$:', error);
+          this.isLoading = false;
+          this.currentUser = null;
+          this.levelProgressSubscription?.unsubscribe(); 
+          this.router.navigate(['/login']);
       }
-   });
+    });
+  }
+
+  /**
+   * Suscribe a los cambios en tiempo real del progreso de niveles del usuario actual.
+   * Se llama desde ionViewWillEnter para asegurar que la suscripción esté activa.
+   */
+  subscribeToLevelProgress(userId: string) {
+    // Desuscribirse de cualquier suscripción anterior para evitar duplicados
+    this.levelProgressSubscription?.unsubscribe(); 
+    
+    this.levelProgressSubscription = this.dataService.subscribeToUserLevelProgress(userId).subscribe({
+      next: (payload) => {
+        // Cuando hay un cambio en el progreso del nivel del usuario, recargar los niveles
+        console.log('HomePage: Cambio en progreso de nivel detectado por Realtime API. Recargando niveles...');
+        if (this.currentUser) {
+          this.loadNivelesFromSupabase(this.currentUser.id);
+        }
+      },
+      error: (err) => {
+        console.error('HomePage: Error en la suscripción a progreso de niveles en tiempo real:', err);
+      }
+    });
   }
 
   async loadNivelesFromSupabase(userId: string) {
@@ -102,10 +143,8 @@ irAModuloLocal(ruta: string) {
     }
   }
 
-  // Opcional: si el trigger no fuera suficiente o como respaldo.
   async ensureLevelOneAccessInSupabase(userId: string) {
     try {
-      // Asumiendo que el nivel con numero_nivel 1 tiene id=1 en tu tabla 'niveles'
       await this.dataService.updateNivelAccess(userId, 1, true);
       console.log('HomePage: Acceso asegurado para nivel 1.');
     } catch (error) {
@@ -113,17 +152,13 @@ irAModuloLocal(ruta: string) {
     }
   }
 
-  // --- MÉTODO irANivel CORREGIDO ---
-  irANivel(nivelSeleccionado: Nivel) { // Acepta el objeto Nivel completo
-    // La validación de acceso ya está en el template (botón [disabled] y (click))
-    // pero una comprobación aquí es una buena práctica.
+  irANivel(nivelSeleccionado: Nivel) {
     if (!nivelSeleccionado?.acceso) {
       this.presentAlert('Acceso Bloqueado', 'Completa los niveles anteriores para desbloquear este.');
       return;
     }
 
     console.log(`HomePage: Navegando a level-detail con ID: ${nivelSeleccionado.idnivel}`);
-    // Navega a la ruta genérica '/level-detail' pasando el idnivel como parámetro
     this.router.navigate(['/level-detail', nivelSeleccionado.idnivel]);
   }
 

@@ -1,0 +1,87 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Quizz Final del Nivel</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="video-container">
+    <video #videoElement autoplay playsinline></video>
+  </div>
+
+  <div class="ion-text-center ion-padding">
+    <h1 class="ion-text-center">¡Es hora del Quizz Final!</h1>
+    <p>Realiza el gesto de "Adiós" para completar el quiz.</p>
+
+    <div class="gesture-display ion-margin-top">
+      <h2 *ngIf="gestureDetected" [class.detected-text]="gestureDetected === 'Adiós'">
+        Gesto detectado: {{ gestureDetected }}
+      </h2>
+      <p *ngIf="!gestureDetected">Esperando gesto...</p>
+    </div>
+
+    <ion-button 
+      *ngIf="!quizCompleted" 
+      expand="block" 
+      class="ion-margin-top" 
+      (click)="submitQuiz()" 
+      color="success"
+      [disabled]="!currentUser || levelId === null"
+    >
+      Completar Quiz Manualmente (Solo para pruebas)
+    </ion-button>
+
+    <div *ngIf="quizCompleted" class="ion-margin-top ion-text-center">
+      <ion-icon name="checkmark-circle" color="success" style="font-size: 3em;"></ion-icon>
+      <p>¡Quiz completado!</p>
+      <p>Tu puntaje: <strong>{{ currentScore }}</strong></p>
+      <ion-button expand="block" routerLink="/level-detail/{{levelId}}" color="primary">
+        Volver al Nivel
+      </ion-button>
+    </div>
+
+    </div>
+</ion-content>
+
+<style>
+  .video-container {
+    position: relative;
+    width: 100%;
+    max-width: 600px; /* Ajusta según tus necesidades */
+    margin: 0 auto 20px auto;
+    background-color: #000;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .video-container video {
+    width: 100%;
+    height: auto;
+    display: block;
+    transform: scaleX(-1); /* Reflejar la cámara para que parezca un espejo */
+  }
+
+  .gesture-display h2 {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: var(--ion-color-medium);
+    transition: color 0.3s ease-in-out;
+  }
+
+  .gesture-display .detected-text {
+    color: var(--ion-color-success);
+  }
+
+  /* Estilos para el botón de prueba */
+  ion-button[color="success"] {
+    --background: var(--ion-color-success);
+    --background-activated: var(--ion-color-success-shade);
+    --background-focused: var(--ion-color-success-tint);
+    --color: #fff;
+    --border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+</style>

@@ -1,4 +1,4 @@
-// src/app/services/auth.service.ts
+// src/app/services/auth/auth.service.ts
 import { Injectable } from '@angular/core';
 import {
   createClient,
@@ -15,6 +15,9 @@ import { BehaviorSubject, Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
+  // sendPasswordResetEmail(email: string) { // Esta línea será reemplazada por la implementación real
+  //   throw new Error('Method not implemented.');
+  // }
   // 
   public readonly supabase: SupabaseClient; // Hazlo público y de solo lectura
 
@@ -64,9 +67,6 @@ export class AuthService {
     name: string
   ): Promise<{ user: User | null; error: AuthError | null }> {
     try {
-      // Para pruebas en desarrollo web, podrías usar:
-      // const emailRedirectURL = 'http://localhost:8100/login';
-      // Para tu app Android, usa tu esquema personalizado:
       const emailRedirectURL = 'westlingoapp://auth-callback'; // Asegúrate que este es tu esquema real
 
       const { data, error } = await this.supabase.auth.signUp({
@@ -111,7 +111,6 @@ export class AuthService {
         console.error('AuthService: Error durante signIn:', error.message);
         return { user: null, session: null, error };
       }
-      // onAuthStateChange en el constructor se encargará de actualizar _currentUser y _currentSession
       console.log('AuthService: SignIn exitoso para usuario:', data.user);
       return { user: data.user, session: data.session, error: null };
 
@@ -148,5 +147,26 @@ export class AuthService {
     }
   }
 
-  // Puedes añadir más métodos aquí, como para resetear contraseña, actualizar usuario, etc.
+  /**
+   * Envía un correo electrónico de restablecimiento de contraseña al usuario.
+   * La URL de redirección debe estar configurada en Supabase > Authentication > URL Configuration
+   * y también en tu aplicación para manejar el restablecimiento.
+   * @param email El correo electrónico del usuario.
+   */
+  async sendPasswordResetEmail(email: string): Promise<void> {
+    console.log(`AuthService: Enviando correo de restablecimiento a ${email}`);
+    const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
+      // IMPORTANTE: Esta URL debe ser una URL válida de tu aplicación
+      // donde el usuario será redirigido para establecer la nueva contraseña.
+      // Por ejemplo, 'https://tu-dominio.com/reset-password'
+      // Asegúrate de que esta URL esté configurada en tu Supabase > Authentication > URL Configuration
+      //redirectTo: environment.supabasePasswordResetRedirectTo || 'http://localhost:8100/login' // URL de fallback o desde env
+    });
+
+    if (error) {
+      console.error('AuthService: Error al enviar correo de restablecimiento:', error);
+      throw error;
+    }
+    console.log('AuthService: Correo de restablecimiento enviado con éxito.');
+  }
 }

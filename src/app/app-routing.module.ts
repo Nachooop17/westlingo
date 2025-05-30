@@ -33,16 +33,25 @@ const routes: Routes = [
   },
   {
   path: 'level-detail/:levelId/sublevel/:sublevelId', // Ruta para un subnivel específico
-  loadChildren: () => import('./pages/sublevel/sublevel.module').then( m => m.SublevelPageModule)
-},
+  loadChildren: () => import('./pages/sublevel/sublevel.module').then( m => m.SublevelPageModule) 
+  },
+  {
+    path: 'quiz-uno/:levelId', // Ruta para el Quizz Final (quiz-uno)
+    // CAMBIO CLAVE: Usar loadComponent para cargar directamente el componente standalone
+    loadComponent: () => import('./pages/quiz-uno/quiz-uno.page').then( m => m.QuizUnoPage)
+  },
+  {
+    path: 'recuperar',
+    loadComponent: () => import('./pages/recuperar/recuperar.page').then( m => m.RecuperarPage)
+  },
   {
     path: '**',
     loadChildren: () => import('./pages/notfound/notfound.module').then( m => m.NotfoundPageModule)
-  },
-    
+  }
+  
 
 
-
+  
 ];
 
 @NgModule({
