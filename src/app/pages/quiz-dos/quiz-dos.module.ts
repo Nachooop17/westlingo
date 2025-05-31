@@ -4,17 +4,17 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { LevelDetailPageRoutingModule } from './level-detail-routing.module';
+import { QuizDosPageRoutingModule } from './quiz-dos-routing.module';
 
-import { LevelDetailPage } from './level-detail.page';
+import { QuizDosPage } from './quiz-dos.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    LevelDetailPageRoutingModule
+    QuizDosPageRoutingModule
   ],
-  declarations: [LevelDetailPage]
+  declarations: [QuizDosPage]
 })
-export class LevelDetailPageModule {}
+export class QuizDosPageModule {}

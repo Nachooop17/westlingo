@@ -1,4 +1,4 @@
-// src/app/pages/quiz-uno/quiz-uno.page.ts
+// src/app/pages/quiz-dos/quiz-dos.page.ts
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, NgZone } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -13,7 +13,6 @@ import { AuthService } from 'src/app/services/auth.service';
 import { GestureDetectionService } from 'src/app/services/gesture-detection.service';
 import { User } from '@supabase/supabase-js';
 
-
 // Definición de los landmarks de MediaPipe Hands (para referencia)
 const HandLandmark = {
   WRIST: 0,
@@ -25,9 +24,9 @@ const HandLandmark = {
 };
 
 @Component({
-  selector: 'app-quiz-uno',
-  templateUrl: './quiz-uno.page.html',
-  styleUrls: ['./quiz-uno.page.scss'],
+  selector: 'app-quiz-dos', // Selector único para quiz-dos
+  templateUrl: './quiz-dos.page.html',
+  styleUrls: ['./quiz-dos.page.scss'],
   standalone: true,
   imports: [
     CommonModule,
@@ -35,11 +34,11 @@ const HandLandmark = {
     IonicModule
   ]
 })
-export class QuizUnoPage implements OnInit, OnDestroy {
+export class QuizDosPage implements OnInit, OnDestroy {
   @ViewChild('videoElement', { static: true }) videoElement!: ElementRef<HTMLVideoElement>;
 
   levelId: number | null = null;
-  subnivelId: number | null = null; // <--- subnivelId ahora es necesario
+  subnivelId: number | null = null; // Propiedad para el ID del subnivel
   currentUser: User | null = null;
   currentScore: number = 0;
   quizCompleted: boolean = false;
@@ -79,17 +78,17 @@ export class QuizUnoPage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    console.log('QuizUnoPage: Componente cargado');
+    console.log('QuizDosPage: Componente cargado');
     this.route.paramMap.subscribe(params => {
       const levelIdParam = params.get('levelId');
-      const subnivelIdParam = params.get('subnivelId'); // <--- Capturar el subnivelId
+      const subnivelIdParam = params.get('subnivelId'); // Capturar el subnivelId
 
       if (levelIdParam && subnivelIdParam) {
         this.levelId = +levelIdParam;
-        this.subnivelId = +subnivelIdParam; // <--- Asignar subnivelId
-        console.log(`QuizUnoPage: Recibido levelId: ${this.levelId}, subnivelId: ${this.subnivelId}`);
+        this.subnivelId = +subnivelIdParam; // Asignar subnivelId
+        console.log(`QuizDosPage: Recibido levelId: ${this.levelId}, subnivelId: ${this.subnivelId}`);
       } else {
-        console.error('QuizUnoPage: ID de nivel o subnivel no proporcionado.');
+        console.error('QuizDosPage: ID de nivel o subnivel no proporcionado.');
         this.presentAlert('Error', 'No se pudo cargar el quizz. Faltan IDs.');
         this.navCtrl.back();
       }
@@ -98,7 +97,7 @@ export class QuizUnoPage implements OnInit, OnDestroy {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (!user) {
-        console.log('QuizUnoPage: No hay usuario, redirigiendo a login...');
+        console.log('QuizDosPage: No hay usuario, redirigiendo a login...');
         this.router.navigate(['/login']);
       }
     });
@@ -106,7 +105,7 @@ export class QuizUnoPage implements OnInit, OnDestroy {
     if (this.videoElement && this.videoElement.nativeElement) {
       this.gestureService.initialize(this.videoElement.nativeElement, this.onResults.bind(this));
     } else {
-      console.error('QuizUnoPage: videoElement no está disponible en ngOnInit.');
+      console.error('QuizDosPage: videoElement no está disponible en ngOnInit.');
     }
   }
 
@@ -117,7 +116,7 @@ export class QuizUnoPage implements OnInit, OnDestroy {
     }
   }
 
-  // --- Métodos de detección de gestos ---
+  // --- Métodos de detección de gestos (copiados de quiz-uno) ---
   onResults(results: any) {
     this.ngZone.run(() => {
       if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
@@ -128,7 +127,7 @@ export class QuizUnoPage implements OnInit, OnDestroy {
         if (isGoodbyeGesture) {
           if (this.gestureDetected !== 'Adiós') {
             this.gestureDetected = 'Adiós';
-            console.log('QuizUnoPage: GESTO DETECTADO: Adiós');
+            console.log('QuizDosPage: GESTO DETECTADO: Adiós');
             this.resetWaveDetection();
             
             if (!this.quizCompleted) {
@@ -160,7 +159,7 @@ export class QuizUnoPage implements OnInit, OnDestroy {
 
     const extendedFingersCount = [indexExtended, middleExtended, ringExtended, pinkyExtended, thumbExtended]
                                   .filter(isExtended => isExtended).length;
-    console.log(`DEBUG_ALL_FINGERS: Dedos extendidos (cuenta): ${extendedFingersCount}`);
+    // console.log(`DEBUG_ALL_FINGERS: Dedos extendidos (cuenta): ${extendedFingersCount}`);
     
     const thumbX = landmarks[HandLandmark.THUMB_TIP].x;
     const indexX = landmarks[HandLandmark.INDEX_FINGER_MCP].x;
@@ -169,7 +168,7 @@ export class QuizUnoPage implements OnInit, OnDestroy {
     const isThumbSpread = thumbSpreadDelta > this.THUMB_SPREAD_HORIZONTAL_THRESHOLD;
     
     const result = extendedFingersCount >= 3 && isThumbSpread;
-    console.log(`DEBUG_ALL_FINGERS: Condición de dedos extendidos y pulgar separado (resultado): ${result}`);
+    // console.log(`DEBUG_ALL_FINGERS: Condición de dedos extendidos y pulgar separado (resultado): ${result}`);
     return result;
   }
 
@@ -204,25 +203,25 @@ export class QuizUnoPage implements OnInit, OnDestroy {
       clearTimeout(this.waveDetectionTimeout);
     }
     this.waveDetectionTimeout = setTimeout(() => {
-      console.log("DEBUG_WAVE: Timeout de ola, reseteando detección.");
+      // console.log("DEBUG_WAVE: Timeout de ola, reseteando detección.");
       this.resetWaveDetection();
     }, this.WAVE_RESET_TIMEOUT_MS);
 
-    console.log(`DEBUG_WAVE: Muñeca X: ${wristX.toFixed(3)}, AvgX: ${avgX.toFixed(3)}, Delta: ${movementDelta.toFixed(3)}, Cambios: ${this.waveDirectionChanges}`);
+    // console.log(`DEBUG_WAVE: Muñeca X: ${wristX.toFixed(3)}, AvgX: ${avgX.toFixed(3)}, Delta: ${movementDelta.toFixed(3)}, Cambios: ${this.waveDirectionChanges}`);
 
     if (Math.abs(movementDelta) > this.WAVE_X_THRESHOLD) {
       const currentDirection = movementDelta > 0 ? 'RIGHT' : 'LEFT';
 
       if (this.lastWaveDirection !== 'NONE' && this.lastWaveDirection !== currentDirection) {
         this.waveDirectionChanges++;
-        console.log(`DEBUG_WAVE: *** Cambio de dirección detectado! Total cambios: ${this.waveDirectionChanges}`);
+        // console.log(`DEBUG_WAVE: *** Cambio de dirección detectado! Total cambios: ${this.waveDirectionChanges}`);
       }
       
       this.lastWaveDirection = currentDirection;
       this.lastSignificantX = avgX; 
 
       if (this.waveDirectionChanges >= this.MIN_WAVES_DETECTED) {
-        console.log("DEBUG_WAVE: --- Umbral de cambios de dirección alcanzado, GESTO COMPLETADO! ---");
+        // console.log("DEBUG_WAVE: --- Umbral de cambios de dirección alcanzado, GESTO COMPLETADO! ---");
         return true;
       }
     }
@@ -230,7 +229,7 @@ export class QuizUnoPage implements OnInit, OnDestroy {
   }
 
   resetWaveDetection() {
-    console.log("DEBUG_RESET: Reseteando estado de detección de ola.");
+    // console.log("DEBUG_RESET: Reseteando estado de detección de ola.");
     this.wristXHistory = [];
     this.waveDirectionChanges = 0;
     this.lastWaveDirection = 'NONE';
@@ -287,7 +286,7 @@ export class QuizUnoPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Completa el quiz (guarda su progreso como un subnivel normal).
+   * Completa el quiz (solo guarda su progreso, NO desbloquea el siguiente nivel).
    */
   async submitQuiz() {
     // Asegurarse de que subnivelId esté presente
@@ -296,7 +295,7 @@ export class QuizUnoPage implements OnInit, OnDestroy {
     }
 
     const loading = await this.loadingController.create({
-      message: 'Guardando tu progreso del quiz...', // Mensaje actualizado
+      message: 'Guardando tu progreso...',
       spinner: 'crescent'
     });
     await loading.present();
@@ -314,8 +313,9 @@ export class QuizUnoPage implements OnInit, OnDestroy {
       );
       console.log(`Progreso del Subnivel ${this.subnivelId} para nivel ${this.levelId} actualizado.`);
 
-      await this.presentAlert('¡Quiz Completado!', `¡Has completado este quiz! Tu puntaje: ${this.currentScore}.`);
-      this.router.navigate(['/level-detail', this.levelId]); // Vuelve a la página del nivel actual
+      await this.presentAlert('¡Quizz Completado!', `¡Has completado este quiz! Tu puntaje: ${this.currentScore}.`);
+      // Navega de vuelta a la página del nivel actual
+      this.router.navigate(['/level-detail', this.levelId]); 
 
     } catch (error: any) {
       console.error('Error al completar quiz:', error);

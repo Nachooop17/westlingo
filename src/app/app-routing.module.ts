@@ -28,26 +28,37 @@ const routes: Routes = [
     loadChildren: () => import('./pages/settings/settings.module').then( m => m.SettingsPageModule)
   },
   {
-    path: 'level-detail/:id', // <--- NUEVA RUTA con parámetro :id
-    loadChildren: () => import('./pages/level-detail/level-detail.module').then( m => m.LevelDetailPageModule)
+    path: 'level-detail/:id',
+    // CAMBIO CLAVE AQUÍ: Usar loadComponent para cargar directamente el componente standalone
+    loadComponent: () => import('./pages/level-detail/level-detail.page').then( m => m.LevelDetailPage)
   },
   {
   path: 'level-detail/:levelId/sublevel/:sublevelId', // Ruta para un subnivel específico
   loadChildren: () => import('./pages/sublevel/sublevel.module').then( m => m.SublevelPageModule) 
   },
   {
-    path: 'quiz-uno/:levelId', // Ruta para el Quizz Final (quiz-uno)
-    // CAMBIO CLAVE: Usar loadComponent para cargar directamente el componente standalone
+    path: 'quiz-uno/:levelId/:subnivelId', // <--- CAMBIO CLAVE AQUÍ: AHORA INCLUYE subnivelId
     loadComponent: () => import('./pages/quiz-uno/quiz-uno.page').then( m => m.QuizUnoPage)
+  },
+  {
+    path: 'quiz-dos/:levelId/:subnivelId', 
+    loadComponent: () => import('./pages/quiz-dos/quiz-dos.page').then( m => m.QuizDosPage)
   },
   {
     path: 'recuperar',
     loadComponent: () => import('./pages/recuperar/recuperar.page').then( m => m.RecuperarPage)
   },
   {
+    path: 'profile', // <--- NUEVA RUTA PARA EL PERFIL
+    loadComponent: () => import('./pages/profile/profile.page').then( m => m.ProfilePage)
+  },
+  
+  {
     path: '**',
     loadChildren: () => import('./pages/notfound/notfound.module').then( m => m.NotfoundPageModule)
   }
+  
+
   
 
 

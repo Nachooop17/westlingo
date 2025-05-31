@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { SupabaseClient, PostgrestError } from '@supabase/supabase-js';
 import { AuthService } from './auth.service';
-import { Observable } from 'rxjs'; // Importar Observable
+import { Observable } from 'rxjs';
 
 // --- INTERFACES DE MODELO DE DATOS ---
 export interface Nivel {
@@ -22,23 +22,17 @@ export interface Subnivel {
   nombre: string;
   contenido?: any;
   created_at?: string;
-  tipo?: 'contenido' | 'quiz';
-  pagina_quiz_local?: string | null;
+  tipo?: 'contenido' | 'quiz'; // Indica si es contenido o un quiz
+  pagina_quiz_local?: string | null; // Nombre de la página local del quiz (ej. 'quiz-dos')
 }
 
 export interface SubnivelConProgreso extends Subnivel {
   usuario_completado: boolean;
   usuario_puntaje?: number | null;
+  isUnlocked?: boolean; // Para controlar el acceso secuencial en la UI
 }
 
-export interface ProgresoQuizzFinal {
-  user_id: string;
-  nivel_id: number;
-  completado: boolean;
-  fecha_completado: string | null;
-  puntaje: number | null;
-  updated_at: string;
-}
+// INTERFAZ ProgresoQuizzFinal ELIMINADA
 
 // --- Interfaces auxiliares para tipar datos crudos de Supabase ---
 interface NivelSupabase {
@@ -179,6 +173,7 @@ export class DataService {
         ...subnivel,
         usuario_completado: progreso?.completado ?? false,
         usuario_puntaje: progreso?.puntaje ?? null,
+        isUnlocked: false // Se establecerá en LevelDetailPage para el acceso secuencial
       };
     });
 
@@ -234,6 +229,7 @@ export class DataService {
       ...subnivelData,
       usuario_completado: progresoData?.completado ?? false,
       usuario_puntaje: progresoData?.puntaje ?? null,
+      isUnlocked: true // Este subnivel está siendo accedido, por lo tanto, desbloqueado
     };
 
     console.log('DataService: Subnivel con progreso:', sublevelConProgreso);
@@ -258,52 +254,7 @@ export class DataService {
     console.log(`DataService: Upsert progreso subnivel ${sublevelId} exitoso`);
   }
 
-  async getProgresoQuizzFinal(nivelId: number, userId: string): Promise<ProgresoQuizzFinal | null> {
-    try {
-      const { data, error } = await this.supabase
-        .from('progreso_quiz_final_usuario')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('nivel_id', nivelId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('DataService: Error al obtener progreso del quizz final:', error);
-        throw error;
-      }
-      return data || null;
-    } catch (error) {
-      console.error('DataService: Excepción en getProgresoQuizzFinal:', error);
-      throw error;
-    }
-  }
-
-  async updateProgresoQuizzFinal(userId: string, nivelId: number, completado: boolean, puntaje: number | null): Promise<void> {
-    try {
-      const { data, error } = await this.supabase
-        .from('progreso_quiz_final_usuario')
-        .upsert(
-          {
-            user_id: userId,
-            nivel_id: nivelId,
-            completado: completado,
-            puntaje: puntaje,
-            fecha_completado: completado ? new Date().toISOString() : null,
-            updated_at: new Date().toISOString()
-          },
-          { onConflict: 'user_id,nivel_id' }
-        );
-
-      if (error) {
-        console.error('DataService: Error al actualizar progreso del quizz final:', error);
-        throw error;
-      }
-      console.log('DataService: Progreso del quizz final actualizado/insertado:', data);
-    } catch (error) {
-      console.error('DataService: Excepción en updateProgresoQuizzFinal:', error);
-      throw error;
-    }
-  }
+  // MÉTODOS getProgresoQuizzFinal y updateProgresoQuizzFinal ELIMINADOS
 
   /**
    * Suscribe a los cambios en tiempo real del progreso de niveles de un usuario.

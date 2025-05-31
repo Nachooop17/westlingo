@@ -1,0 +1,111 @@
+<ion-header>
+  <ion-toolbar color="secondary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/level-detail/{{levelId}}"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Quizz Intermedio</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="video-container">
+    <video #videoElement autoplay playsinline></video>
+  </div>
+
+  <div class="ion-text-center ion-padding">
+    <h1 class="ion-text-center">¡Bienvenido al Quizz Intermedio!</h1>
+    <p>Este es el quiz para el subnivel {{ subnivelId }} del nivel {{ levelId }}.</p>
+    <p>Realiza el gesto de "Adiós" para completar este quiz.</p>
+
+    <div class="gesture-display ion-margin-top">
+      <h2 *ngIf="gestureDetected" [class.detected-text]="gestureDetected === 'Adiós'">
+        Gesto detectado: {{ gestureDetected }}
+      </h2>
+      <p *ngIf="!gestureDetected">Esperando gesto...</p>
+    </div>
+
+    <div *ngIf="isGeneratingFeedback" class="ion-text-center ion-margin-top">
+      <ion-spinner name="dots" color="tertiary"></ion-spinner>
+      <p>Generando retroalimentación ✨...</p>
+    </div>
+    <div *ngIf="llmFeedback && !isGeneratingFeedback" class="ion-margin-top ion-padding llm-feedback-box">
+      <p class="llm-text">{{ llmFeedback }}</p>
+    </div>
+    <ion-button 
+      *ngIf="!quizCompleted" 
+      expand="block" 
+      class="ion-margin-top" 
+      (click)="submitQuiz()" 
+      color="warning"
+      [disabled]="!currentUser || levelId === null || subnivelId === null"
+    >
+      Completar Quiz Manualmente (Solo para pruebas)
+    </ion-button>
+
+    <div *ngIf="quizCompleted" class="ion-margin-top ion-text-center">
+      <ion-icon name="checkmark-circle" color="success" style="font-size: 3em;"></ion-icon>
+      <p>¡Quiz completado!</p>
+      <p>Tu puntaje: <strong>{{ currentScore }}</strong></p>
+      <ion-button expand="block" routerLink="/level-detail/{{levelId}}" color="primary">
+        Volver al Nivel
+      </ion-button>
+    </div>
+
+  </div>
+</ion-content>
+
+<style>
+  .video-container {
+    position: relative;
+    width: 100%;
+    max-width: 600px; /* Ajusta según tus necesidades */
+    margin: 0 auto 20px auto;
+    background-color: #000;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .video-container video {
+    width: 100%;
+    height: auto;
+    display: block;
+    transform: scaleX(-1); /* Reflejar la cámara para que parezca un espejo */
+  }
+
+  .gesture-display h2 {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: var(--ion-color-medium);
+    transition: color 0.3s ease-in-out;
+  }
+
+  .gesture-display .detected-text {
+    color: var(--ion-color-success);
+  }
+
+  ion-button[color="warning"] {
+    --background: var(--ion-color-warning);
+    --background-activated: var(--ion-color-warning-shade);
+    --background-focused: var(--ion-color-warning-tint);
+    --color: #fff;
+    --border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Estilos para el feedback del LLM */
+  .llm-feedback-box {
+    background-color: var(--ion-color-light);
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--ion-color-tertiary);
+  }
+
+  .llm-text {
+    font-style: italic;
+    color: var(--ion-color-dark);
+    font-size: 1.1em;
+    margin: 0;
+  }
+</style>

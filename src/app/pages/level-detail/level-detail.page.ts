@@ -1,52 +1,43 @@
 // src/app/pages/level-detail/level-detail.page.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router'; // Importar RouterModule
+import { CommonModule } from '@angular/common'; // Importar CommonModule para *ngIf y *ngFor
+import { 
+  NavController, 
+  AlertController, 
+  LoadingController,
+  IonicModule // <--- IMPORTAR IonicModule AQUÍ para todos los componentes Ionic
+} from '@ionic/angular'; 
 import { Subscription } from 'rxjs';
 import { switchMap, tap, catchError } from 'rxjs/operators';
-import { NavController, AlertController, LoadingController } from '@ionic/angular';
 
 // --- Servicios y Tipos ---
 import { AuthService } from '@services/auth.service';
-// Asegúrate que las interfaces se importen correctamente, incluyendo ProgresoQuizzFinal
-import { DataService, Nivel, SubnivelConProgreso, ProgresoQuizzFinal } from '@services/data.service';
+import { DataService, Nivel, SubnivelConProgreso } from '@services/data.service';
 
 import { User } from '@supabase/supabase-js';
-
-// Define una interfaz para el subnivel del quizz final local
-// Extiende SubnivelConProgreso para asegurar compatibilidad y añade la bandera 'isFinalQuizz'
-interface QuizzFinalSubnivel extends SubnivelConProgreso {
-  isFinalQuizz: true; // Esta propiedad será 'true' solo para el quizz final local
-}
 
 @Component({
   selector: 'app-level-detail',
   templateUrl: './level-detail.page.html',
   styleUrls: ['./level-detail.page.scss'],
-  standalone: false,
+  standalone: true, // <--- ESTO DEBE SER TRUE
+  imports: [ // <--- TODAS LAS DEPENDENCIAS DEL TEMPLATE DEBEN IR AQUÍ
+    CommonModule, // Para *ngIf, *ngFor
+    RouterModule, // Para routerLink
+    IonicModule // Para todos los componentes Ionic (ion-header, ion-content, ion-button, ion-icon, etc.)
+  ]
 })
 export class LevelDetailPage implements OnInit, OnDestroy {
   levelId: number | null = null;
-  levelDetails: Nivel | null = null; // Para mostrar info del nivel padre
-  // El array subniveles ahora puede contener tanto SubnivelConProgreso como QuizzFinalSubnivel
-  subniveles: (SubnivelConProgreso | QuizzFinalSubnivel)[] = [];
+  levelDetails: Nivel | null = null;
+  subniveles: SubnivelConProgreso[] = []; 
   currentUser: User | null = null;
 
   isLoading: boolean = true;
   errorMessage: string | null = null;
 
   private dataLoadSubscription: Subscription | null = null;
-
-  // Definición de una plantilla para el subnivel del quizz final local
-  // Omitimos algunas propiedades que serán completadas al momento de crear el objeto
-  readonly FINAL_QUIZZ_SUBLEVEL_TEMPLATE: Omit<QuizzFinalSubnivel, 'id' | 'nivel_id' | 'contenido' | 'created_at'> & { localId: string } = {
-    localId: 'quizz-final-local', // Un ID único para este subnivel local (no de la DB)
-    nombre: 'Quizz Final del Nivel',
-    numero_subnivel: 9999, // Un número alto para que aparezca al final de la lista
-    usuario_completado: false, // Será sobreescrito por el progreso de la DB
-    usuario_puntaje: null,     // Será sobreescrito por el progreso de la DB
-    isFinalQuizz: true,        // La bandera que lo identifica
-  };
-
 
   constructor(
     private route: ActivatedRoute,
@@ -102,9 +93,9 @@ export class LevelDetailPage implements OnInit, OnDestroy {
 
   async loadLevelAndSublevelData(levelId: number, userId: string) {
     const loadingIndicator = await this.showLoading('Cargando contenido del nivel...');
-    this.errorMessage = null; // Limpiar errores previos
-    this.levelDetails = null; // Limpiar detalles previos
-    this.subniveles = [];     // Limpiar subniveles previos
+    this.errorMessage = null;
+    this.levelDetails = null;
+    this.subniveles = [];
 
     try {
       console.log(`LevelDetailPage: Solicitando datos para nivel ${levelId}, usuario ${userId}`);
@@ -120,53 +111,43 @@ export class LevelDetailPage implements OnInit, OnDestroy {
         console.log('LevelDetailPage: Detalles del nivel cargados:', this.levelDetails);
       }
 
-      // Inicializa la lista con los subniveles de la base de datos
-      this.subniveles = subnivelesConProgresoData || [];
-      console.log('LevelDetailPage: Subniveles con progreso cargados:', this.subniveles);
+      // 1. Procesar subniveles de la base de datos y establecer 'isUnlocked' para el acceso secuencial
+      const processedSubniveles: SubnivelConProgreso[] = [];
+      let previousSublevelCompleted = true; // El primer subnivel siempre está "desbloqueado" si el nivel es accesible.
 
-      // --- Lógica para el Quizz Final, ahora con estado de la DB ---
-      // 1. Determinar si todos los subniveles de la DB están completados
-      // Si no hay subniveles de la DB, asumimos que no se puede desbloquear el quizz final.
+      for (const sub of subnivelesConProgresoData || []) {
+        const currentSub = { ...sub }; // Copia para no modificar el original
+        currentSub.isUnlocked = previousSublevelCompleted; // Desbloqueado si el anterior se completó
+
+        if (currentSub.usuario_completado) {
+          previousSublevelCompleted = true; // Si este está completo, el siguiente se desbloquea
+        } else {
+          previousSublevelCompleted = false; // Si este no está completo, el siguiente se bloquea
+        }
+        processedSubniveles.push(currentSub);
+      }
+      this.subniveles = processedSubniveles;
+      console.log('LevelDetailPage: Subniveles con progreso y estado de desbloqueo:', this.subniveles);
+
+      // 2. Verificar si TODOS los subniveles de la DB están completados (para desbloquear el siguiente nivel principal)
       const allDbSubnivelesCompleted = this.subniveles.length > 0 && this.subniveles.every(sub => sub.usuario_completado);
 
-      // 2. Si todos los subniveles de la DB están completados, añade el quizz final local
+      // --- LÓGICA DE DESBLOQUEO DEL SIGUIENTE NIVEL PRINCIPAL ---
       if (allDbSubnivelesCompleted) {
-        // Obtener el progreso del quizz final desde la nueva tabla
-        const progresoQuizzFinal = await this.dataService.getProgresoQuizzFinal(levelId, userId);
+        const nextLevelId = levelId + 1;
+        const allLevels = await this.dataService.getNivelesForUser(userId);
+        const nextLevel = allLevels.find(n => n.idnivel === nextLevelId);
 
-        const finalQuizz: QuizzFinalSubnivel = {
-          // Propiedades base del template
-          id: this.FINAL_QUIZZ_SUBLEVEL_TEMPLATE.localId as unknown as number, // Cast a number para Subnivel.id
-          nivel_id: levelId,
-          nombre: this.FINAL_QUIZZ_SUBLEVEL_TEMPLATE.nombre,
-          numero_subnivel: this.FINAL_QUIZZ_SUBLEVEL_TEMPLATE.numero_subnivel,
-          contenido: null, // El quizz final no tiene contenido de subnivel
-          created_at: new Date().toISOString(), // O la fecha que consideres para este objeto local
-          isFinalQuizz: true,
-
-          // Estado de completado y puntaje desde la DB
-          usuario_completado: progresoQuizzFinal?.completado || false,
-          usuario_puntaje: progresoQuizzFinal?.puntaje ?? null,
-        };
-
-        // Verifica si el quizz final ya está en la lista para evitar duplicados al recargar
-        const quizzAlreadyAdded = this.subniveles.some(sub => (sub as QuizzFinalSubnivel).isFinalQuizz);
-
-        if (!quizzAlreadyAdded) {
-          this.subniveles.push(finalQuizz);
-          console.log('LevelDetailPage: Quizz Final local añadido con estado de DB.');
+        if (nextLevel && !nextLevel.acceso) {
+          console.log(`LevelDetailPage: Todos los subniveles de DB completados. Desbloqueando Nivel ${nextLevelId}.`);
+          await this.dataService.updateNivelAccess(userId, nextLevelId, true);
+          this.presentAlert('¡Nivel Desbloqueado!', `¡Felicidades! Has completado este nivel y desbloqueado el Nivel ${nextLevelId}.`);
+        } else if (nextLevel && nextLevel.acceso) {
+          console.log(`LevelDetailPage: Nivel ${nextLevelId} ya está desbloqueado.`);
         } else {
-          // Si ya está añadido, actualiza su estado (útil si se completa y se recarga la página)
-          const existingQuizzIndex = this.subniveles.findIndex(sub => (sub as QuizzFinalSubnivel).isFinalQuizz);
-          if (existingQuizzIndex !== -1) {
-            this.subniveles[existingQuizzIndex] = finalQuizz;
-            console.log('LevelDetailPage: Estado del Quizz Final local actualizado.');
-          }
+          console.log(`LevelDetailPage: No hay Nivel ${nextLevelId} para desbloquear o es el último nivel.`);
         }
       }
-
-      // 3. Ordenar los subniveles para asegurar que el quizz final esté al final
-      this.subniveles.sort((a, b) => a.numero_subnivel - b.numero_subnivel);
 
     } catch (error: any) {
       console.error('LevelDetailPage: Error cargando datos del nivel y subniveles:', error);
@@ -177,23 +158,26 @@ export class LevelDetailPage implements OnInit, OnDestroy {
     }
   }
 
-  // Método para cuando un usuario completa un subnivel (existente)
   async completarSubnivel(subnivel: SubnivelConProgreso, nuevoPuntaje?: number) {
     if (!this.currentUser || !this.levelDetails) {
       await this.presentAlert('Error', 'No se puede completar el subnivel sin información de usuario o nivel.');
       return;
     }
 
-    const loading = await this.showLoading('Actualizando progreso...');
+    const loading = await this.loadingController.create({
+      message: 'Actualizando progreso...',
+      spinner: 'crescent'
+    });
+    await loading.present();
+
     try {
       await this.dataService.updateProgresoSubnivel(
         this.currentUser.id,
         subnivel.id,
-        true, // completado = true
+        true,
         nuevoPuntaje ?? subnivel.usuario_puntaje ?? 0
       );
       await this.presentAlert('¡Éxito!', `${subnivel.nombre} marcado como completado.`);
-      // Vuelve a cargar los datos para reflejar el cambio y el posible desbloqueo del quizz final.
       await this.loadLevelAndSublevelData(this.levelDetails.idnivel, this.currentUser.id);
     } catch (error: any) {
       console.error('Error al completar subnivel:', error);
@@ -203,27 +187,29 @@ export class LevelDetailPage implements OnInit, OnDestroy {
     }
   }
 
-  // Método para navegar a la página de un subnivel específico o al quizz final
-  irASubnivel(subnivel: (SubnivelConProgreso | QuizzFinalSubnivel)) {
+  irASubnivel(subnivel: SubnivelConProgreso) {
     if (!this.levelDetails || !this.currentUser) {
       console.error("No hay detalles del nivel padre o usuario para navegar al subnivel.");
       this.presentAlert('Error', 'No se puede navegar. Faltan datos del nivel o usuario.');
       return;
     }
 
-    // Comprueba si es el subnivel del quizz final local
-    if ((subnivel as QuizzFinalSubnivel).isFinalQuizz) {
-      console.log(`Navegando al Quizz Final del Nivel ID: ${this.levelDetails.idnivel}`);
-      // Navega a tu página 'quiz-uno', pasando el ID del nivel
-      this.router.navigate(['/quiz-uno', this.levelDetails.idnivel]);
-    } else {
-      // Navegación existente para subniveles de la base de datos
-      console.log(`Navegando al subnivel ID: ${subnivel.id} del Nivel ID: ${this.levelDetails.idnivel}`);
+    if (!subnivel.isUnlocked) {
+      this.presentAlert('Bloqueado', 'Completa las actividades anteriores para desbloquear esta.');
+      return;
+    }
+
+    if (subnivel.tipo === 'quiz' && subnivel.pagina_quiz_local) {
+      console.log(`Navegando al Subnivel Quiz ID: ${subnivel.id} (Página: ${subnivel.pagina_quiz_local})`);
+      this.router.navigate(['/', subnivel.pagina_quiz_local, this.levelDetails.idnivel, subnivel.id]); 
+    }
+    else {
+      console.log(`Navegando al Subnivel de Contenido ID: ${subnivel.id}`);
       this.router.navigate([
         '/level-detail',
-        this.levelDetails.idnivel, // levelId
+        this.levelDetails.idnivel,
         'sublevel',
-        subnivel.id // sublevelId
+        subnivel.id
       ]);
     }
   }
