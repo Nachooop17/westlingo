@@ -12,7 +12,6 @@ import { AuthService } from 'src/app/services/auth.service';
 import { GestureDetectionService } from 'src/app/services/gesture-detection.service';
 import { User } from '@supabase/supabase-js';
 
-// Definición de los landmarks de MediaPipe Hands (para referencia)
 const HandLandmark = {
   WRIST: 0,
   THUMB_CMC: 1, THUMB_MCP: 2, THUMB_IP: 3, THUMB_TIP: 4,
@@ -44,6 +43,9 @@ export class QuizDosPage implements OnInit, OnDestroy {
 
   gestureDetected: string = '';
   private readonly FINGER_EXTENSION_THRESHOLD = 0.05;
+
+  // Barbilla detectada por FaceMesh
+  private lastChin: {x: number, y: number} | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -78,12 +80,63 @@ export class QuizDosPage implements OnInit, OnDestroy {
     });
 
     if (this.videoElement && this.videoElement.nativeElement) {
-      this.gestureService.initialize(this.videoElement.nativeElement, this.onResults.bind(this));
+      this.gestureService.initialize(
+        this.videoElement.nativeElement,
+        this.onResults.bind(this),
+        this.onFaceResults.bind(this)
+      );
     }
   }
 
   ngOnDestroy() {
     this.gestureService.stop();
+  }
+
+  // Callback de FaceMesh: guarda la barbilla
+  onFaceResults(results: any) {
+    if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+      const chin = results.multiFaceLandmarks[0][152]; // 152 = barbilla
+      this.lastChin = chin;
+      // console.log('Barbilla detectada:', chin);
+    } else {
+      this.lastChin = null;
+    }
+  }
+
+  /**
+   * Procesa los resultados de MediaPipe Hands y detecta el gesto "¿quién?".
+   */
+  onResults(results: any) {
+    this.ngZone.run(() => {
+      if (!this.isHandPresent(results)) {
+        this.gestureDetected = '';
+        return;
+      }
+      const landmarks = results.multiHandLandmarks[0];
+      console.log('Mano detectada');
+
+      if (!this.isOnlyIndexFingerExtended(landmarks)) {
+        this.gestureDetected = '';
+        console.log('No hay solo un dedo (índice) extendido');
+        return;
+      }
+      console.log('Índice extendido y demás dedos doblados');
+
+      if (!this.isIndexNearChin(landmarks)) {
+        this.gestureDetected = '';
+        console.log('Índice no está cerca de la barbilla');
+        return;
+      }
+      console.log('Índice cerca de la barbilla');
+
+      if (this.gestureDetected !== '¿Quién?') {
+        this.gestureDetected = '¿Quién?';
+        console.log('QuizDosPage: GESTO DETECTADO: ¿Quién?');
+        if (!this.quizCompleted) {
+          this.submitQuiz();
+        }
+      }
+    });
   }
 
   /**
@@ -126,12 +179,23 @@ export class QuizDosPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Verifica si el índice está cerca de la barbilla (ajusta el umbral según tu cámara).
+   * Verifica si el índice está cerca de la barbilla real (FaceMesh) o, si no hay barbilla, usa el método antiguo.
    */
   isIndexNearChin(landmarks: any): boolean {
-    const indexY = landmarks[HandLandmark.INDEX_FINGER_TIP].y;
-    const barbillaYThreshold = 0.4;
-    return indexY < barbillaYThreshold;
+    const indexTip = landmarks[HandLandmark.INDEX_FINGER_TIP];
+    if (this.lastChin) {
+      // Validación real con barbilla
+      const dx = indexTip.x - this.lastChin.x;
+      const dy = indexTip.y - this.lastChin.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      // Ajusta el umbral según pruebas (0.07 es un buen inicio)
+      return distance < 0.10;
+    } else {
+      // Fallback: método antiguo (por posición vertical)
+      const indexY = indexTip.y;
+      const barbillaYThreshold = 0.4;
+      return indexY < barbillaYThreshold;
+    }
   }
 
   /**
@@ -143,42 +207,6 @@ export class QuizDosPage implements OnInit, OnDestroy {
     } else {
       return (mcp.y - tip.y) > this.FINGER_EXTENSION_THRESHOLD;
     }
-  }
-
-  /**
-   * Procesa los resultados de MediaPipe y detecta el gesto "¿quién?" paso a paso.
-   */
-  onResults(results: any) {
-    this.ngZone.run(() => {
-      if (!this.isHandPresent(results)) {
-        this.gestureDetected = '';
-        return;
-      }
-      const landmarks = results.multiHandLandmarks[0];
-      console.log('Mano detectada');
-
-      if (!this.isOnlyIndexFingerExtended(landmarks)) {
-        this.gestureDetected = '';
-        console.log('No hay solo un dedo (índice) extendido');
-        return;
-      }
-      console.log('Índice extendido y demás dedos doblados');
-
-      if (!this.isIndexNearChin(landmarks)) {
-        this.gestureDetected = '';
-        console.log('Índice no está cerca de la barbilla');
-        return;
-      }
-      console.log('Índice cerca de la barbilla');
-
-      if (this.gestureDetected !== '¿Quién?') {
-        this.gestureDetected = '¿Quién?';
-        console.log('QuizDosPage: GESTO DETECTADO: ¿Quién?');
-        if (!this.quizCompleted) {
-          this.submitQuiz();
-        }
-      }
-    });
   }
 
   /**

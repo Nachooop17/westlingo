@@ -52,7 +52,10 @@ const routes: Routes = [
     path: 'profile', // <--- NUEVA RUTA PARA EL PERFIL
     loadComponent: () => import('./pages/profile/profile.page').then( m => m.ProfilePage)
   },
-  
+  {
+    path: 'quiz-tres/:levelId/:subnivelId', 
+    loadComponent: () => import('./pages/quiz-tres/quiz-tres.page').then(m => m.QuizTresPage)
+  },
   {
     path: '**',
     loadChildren: () => import('./pages/notfound/notfound.module').then( m => m.NotfoundPageModule)

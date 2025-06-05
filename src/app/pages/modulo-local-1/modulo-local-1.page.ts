@@ -43,7 +43,11 @@ export class ModuloLocal1Page implements OnInit, OnDestroy {
     console.log('ModuloLocal1Page: Componente cargado');
     // Asegúrate que el elemento de video esté disponible
     if (this.videoElement && this.videoElement.nativeElement) {
-      this.gestureService.initialize(this.videoElement.nativeElement, this.onResults.bind(this));
+      this.gestureService.initialize(
+        this.videoElement.nativeElement,
+        this.onResults.bind(this),
+        () => {} // No-op face results callback
+      );
     } else {
       console.error('ModuloLocal1Page: videoElement no está disponible en ngOnInit.');
     }

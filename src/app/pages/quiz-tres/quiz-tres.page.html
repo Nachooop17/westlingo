@@ -1,0 +1,130 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="secondary"> <!-- Color del toolbar como en el ejemplo -->
+    <ion-buttons slot="start">
+      <!-- El defaultHref ahora usa la variable levelId para volver al detalle del nivel correcto -->
+      <ion-back-button [defaultHref]="levelId ? '/level-detail/' + levelId : '/tabs/niveles'"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Quiz: Bebida Alcohólica</ion-title> <!-- Título específico del quiz -->
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Contenedor del video, reflejado horizontalmente -->
+  <div class="video-container">
+    <video #videoElement autoplay playsinline muted class="video-feed"></video>
+  </div>
+
+  <div class="ion-text-center ion-padding">
+    <h1 class="ion-text-center">¡Bienvenido al Quiz de Señas!</h1>
+    <p>Realiza la seña de "Bebida Alcohólica" para completar este quiz.</p>
+
+    <!-- Sección para mostrar el gesto detectado -->
+    <div class="gesture-display ion-margin-top">
+      <h2 *ngIf="gestureDetected" [class.detected-text]="gestureDetected === 'Bebida Alcohólica'">
+        Gesto detectado: {{ gestureDetected }}
+      </h2>
+      <p *ngIf="!gestureDetected && !quizCompleted">Esperando gesto...</p>
+    </div>
+
+    <!-- Retroalimentación del LLM (si se usa) -->
+    <div *ngIf="llmFeedback && !quizCompleted" class="llm-feedback-box ion-margin-top">
+        <p class="llm-text">{{ llmFeedback }}</p>
+    </div>
+
+    <!-- Sección que se muestra cuando el quiz está completado -->
+    <div *ngIf="quizCompleted" class="ion-margin-top ion-text-center">
+      <ion-icon name="checkmark-circle" color="success" style="font-size: 3em;"></ion-icon>
+      <p>¡Quiz completado!</p>
+      <p>Tu puntaje: <strong>{{ currentScore }}</strong></p>
+      <ion-button expand="block" [routerLink]="levelId ? '/level-detail/' + levelId : '/tabs/niveles'" color="primary">
+        Volver al Nivel
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Botón de completar manualmente (opcional, para pruebas) -->
+  <!-- 
+  <ion-button 
+    *ngIf="!quizCompleted" 
+    expand="block" 
+    class="ion-margin-top" 
+    (click)="submitQuiz()" 
+    color="warning"
+    [disabled]="!currentUser || levelId === null || subnivelId === null"
+  >
+    Completar Manualmente (Prueba)
+  </ion-button>
+  -->
+
+</ion-content>
+
+<!-- Los estilos se pueden mover a quiz-tres.page.scss para una mejor organización -->
+<!-- Si los dejas aquí, asegúrate de que no entren en conflicto con estilos globales -->
+<style>
+  .video-container {
+    position: relative;
+    width: 100%;
+    max-width: 480px; /* Ajusta según tus necesidades */
+    margin: 10px auto 20px auto;
+    background-color: #1e1e1e; /* Fondo oscuro para el video */
+    border-radius: 12px; /* Bordes más redondeados */
+    overflow: hidden; /* Para que el video no se salga de los bordes redondeados */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Sombra sutil */
+  }
+
+  .video-container video.video-feed { /* Aplicar a la clase específica */
+    width: 100%;
+    height: auto;
+    display: block;
+    transform: scaleX(-1); /* Reflejar la cámara para que parezca un espejo */
+  }
+
+  .gesture-display h2 {
+    font-size: 1.6em; /* Tamaño de fuente ajustado */
+    font-weight: bold;
+    color: var(--ion-color-medium-shade); /* Color un poco más oscuro para el texto base */
+    transition: color 0.3s ease-in-out, transform 0.2s ease; /* Transición suave */
+    padding: 8px 0;
+  }
+
+  .gesture-display .detected-text {
+    color: var(--ion-color-success); /* Color cuando el gesto es correcto */
+    transform: scale(1.05); /* Efecto sutil de zoom */
+  }
+
+  .gesture-display p {
+    color: var(--ion-color-medium-tint);
+    font-size: 1.1em;
+  }
+
+  /* Estilos para el feedback del LLM (o cualquier feedback de texto) */
+  .llm-feedback-box {
+    background-color: var(--ion-color-light-tint); /* Fondo claro */
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-top: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    border-left: 5px solid var(--ion-color-tertiary); /* Borde distintivo */
+  }
+
+  .llm-text {
+    /* font-style: italic; */ /* Opcional */
+    color: var(--ion-color-dark-shade);
+    font-size: 1.05em; /* Tamaño ligeramente ajustado */
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* Estilos para la sección de completado */
+  .ion-content div[class*="ion-text-center"] h1 {
+    margin-bottom: 8px;
+    font-size: 1.8em;
+    color: var(--ion-color-primary);
+  }
+  .ion-content div[class*="ion-text-center"] p {
+    font-size: 1.1em;
+    color: var(--ion-color-medium-shade);
+    margin-bottom: 16px;
+  }
+
+</style>

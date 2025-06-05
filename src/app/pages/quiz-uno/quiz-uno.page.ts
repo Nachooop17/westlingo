@@ -1,4 +1,3 @@
-// src/app/pages/quiz-uno/quiz-uno.page.ts
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, NgZone } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -12,7 +11,6 @@ import { DataService } from 'src/app/services/data.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { GestureDetectionService } from 'src/app/services/gesture-detection.service';
 import { User } from '@supabase/supabase-js';
-
 
 // Definición de los landmarks de MediaPipe Hands (para referencia)
 const HandLandmark = {
@@ -39,7 +37,7 @@ export class QuizUnoPage implements OnInit, OnDestroy {
   @ViewChild('videoElement', { static: true }) videoElement!: ElementRef<HTMLVideoElement>;
 
   levelId: number | null = null;
-  subnivelId: number | null = null; // <--- subnivelId ahora es necesario
+  subnivelId: number | null = null;
   currentUser: User | null = null;
   currentScore: number = 0;
   quizCompleted: boolean = false;
@@ -47,18 +45,19 @@ export class QuizUnoPage implements OnInit, OnDestroy {
   // --- Propiedades para detección de gestos ---
   gestureDetected: string = '';
   private wristXHistory: number[] = [];
-  private readonly WAVE_HISTORY_LENGTH = 15;
-  private readonly WAVE_X_THRESHOLD = 0.02; 
-  private readonly MIN_WAVES_DETECTED = 2;
+  private readonly WAVE_HISTORY_LENGTH = 10; 
+  private readonly WAVE_X_THRESHOLD = 0.001;  // *** AJUSTADO PARA MAYOR SENSIBILIDAD ***
+  private readonly MIN_WAVES_DETECTED = 2;   // Dos cambios de dirección son suficientes
   
   private waveDirectionChanges: number = 0;
   private lastWaveDirection: 'LEFT' | 'RIGHT' | 'NONE' = 'NONE';
   private lastSignificantX: number | null = null;
   private waveDetectionTimeout: any = null;
-  private readonly WAVE_RESET_TIMEOUT_MS = 1200;
+  private readonly WAVE_RESET_TIMEOUT_MS = 1500; 
 
-  private readonly FINGER_EXTENSION_THRESHOLD = 0.05;
-  private readonly THUMB_SPREAD_HORIZONTAL_THRESHOLD = 0.1;
+  // Estos umbrales son para areAllFiveFingersExtended
+  private readonly FINGER_EXTENSION_THRESHOLD = 0.05; 
+  private readonly THUMB_SPREAD_HORIZONTAL_THRESHOLD = 0.08; 
   // -------------------------------------------
 
   // --- Propiedades para la integración con Gemini API ---
@@ -82,11 +81,11 @@ export class QuizUnoPage implements OnInit, OnDestroy {
     console.log('QuizUnoPage: Componente cargado');
     this.route.paramMap.subscribe(params => {
       const levelIdParam = params.get('levelId');
-      const subnivelIdParam = params.get('subnivelId'); // <--- Capturar el subnivelId
+      const subnivelIdParam = params.get('subnivelId');
 
       if (levelIdParam && subnivelIdParam) {
         this.levelId = +levelIdParam;
-        this.subnivelId = +subnivelIdParam; // <--- Asignar subnivelId
+        this.subnivelId = +subnivelIdParam;
         console.log(`QuizUnoPage: Recibido levelId: ${this.levelId}, subnivelId: ${this.subnivelId}`);
       } else {
         console.error('QuizUnoPage: ID de nivel o subnivel no proporcionado.');
@@ -103,22 +102,29 @@ export class QuizUnoPage implements OnInit, OnDestroy {
       }
     });
 
+    console.log('QuizUnoPage: Verificando videoElement:', this.videoElement);
     if (this.videoElement && this.videoElement.nativeElement) {
-      this.gestureService.initialize(this.videoElement.nativeElement, this.onResults.bind(this));
+      console.log('QuizUnoPage: videoElement.nativeElement:', this.videoElement.nativeElement);
+      this.gestureService.initialize(this.videoElement.nativeElement, this.onResults.bind(this), () => {});
+      console.log('QuizUnoPage: GestureService initialized.');
     } else {
       console.error('QuizUnoPage: videoElement no está disponible en ngOnInit.');
     }
   }
 
   ngOnDestroy() {
+    console.log('QuizUnoPage: Componente destruido. Deteniendo GestureService.');
     this.gestureService.stop();
     if (this.waveDetectionTimeout) {
       clearTimeout(this.waveDetectionTimeout);
+      this.waveDetectionTimeout = null;
     }
   }
 
   // --- Métodos de detección de gestos ---
   onResults(results: any) {
+    // Comentado para reducir spam en consola, descomentar si se necesita depurar `results`
+    // console.log('QuizUnoPage: onResults CALLED with results:', results); 
     this.ngZone.run(() => {
       if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
         const landmarks = results.multiHandLandmarks[0];
@@ -128,26 +134,32 @@ export class QuizUnoPage implements OnInit, OnDestroy {
         if (isGoodbyeGesture) {
           if (this.gestureDetected !== 'Adiós') {
             this.gestureDetected = 'Adiós';
-            console.log('QuizUnoPage: GESTO DETECTADO: Adiós');
-            this.resetWaveDetection();
+            // El log "GESTO DETECTADO" ya está en detectGoodbyeWave
+            // this.resetWaveDetection(); // Se resetea dentro de detectGoodbyeWave al confirmarse
             
             if (!this.quizCompleted) {
-              this.generateGestureFeedback('Adiós');
+              this.generateGestureFeedback('Adiós'); // Mantenemos feedback si existe
               this.submitQuiz();
             }
           }
         } else {
-          this.gestureDetected = '';
+          // Si detectGoodbyeWave devuelve false y no se ha detectado 'Adiós',
+          // podría ser porque la mano no está extendida o el movimiento no es concluyente.
+          // this.gestureDetected = ''; // Evita limpiar el gesto si ya se detectó y está en proceso de submit
         }
       } else {
-        this.gestureDetected = '';
+        // No se detectan manos, reseteamos el estado de detección si estaba en progreso
+        if (this.waveDirectionChanges > 0 || this.gestureDetected === 'Adiós') { // Solo resetea si había algo en progreso o detectado
+            console.log("DEBUG_RESET: No se detectan manos, reseteando detección de ola.");
+            this.resetWaveDetection();
+        }
+        this.gestureDetected = ''; // Siempre limpia el gesto si no hay manos
       }
     });
   }
 
   isFingerExtended(tip: any, mcp: any): boolean {
-    const distance = Math.hypot(tip.x - mcp.x, tip.y - mcp.y, tip.z - mcp.z);
-    return distance > this.FINGER_EXTENSION_THRESHOLD;
+    return tip.y < mcp.y - this.FINGER_EXTENSION_THRESHOLD * 0.1; 
   }
 
   areAllFiveFingersExtended(landmarks: any): boolean {
@@ -156,81 +168,107 @@ export class QuizUnoPage implements OnInit, OnDestroy {
     const ringExtended = this.isFingerExtended(landmarks[HandLandmark.RING_FINGER_TIP], landmarks[HandLandmark.RING_FINGER_MCP]);
     const pinkyExtended = this.isFingerExtended(landmarks[HandLandmark.PINKY_TIP], landmarks[HandLandmark.PINKY_MCP]);
 
-    const thumbExtended = this.isFingerExtended(landmarks[HandLandmark.THUMB_TIP], landmarks[HandLandmark.THUMB_CMC]); 
-
-    const extendedFingersCount = [indexExtended, middleExtended, ringExtended, pinkyExtended, thumbExtended]
-                                  .filter(isExtended => isExtended).length;
-    console.log(`DEBUG_ALL_FINGERS: Dedos extendidos (cuenta): ${extendedFingersCount}`);
+    const thumbTipX = landmarks[HandLandmark.THUMB_TIP].x;
+    const thumbCmcX = landmarks[HandLandmark.THUMB_CMC].x; 
+    const indexFingerMcpX = landmarks[HandLandmark.INDEX_FINGER_MCP].x;
     
-    const thumbX = landmarks[HandLandmark.THUMB_TIP].x;
-    const indexX = landmarks[HandLandmark.INDEX_FINGER_MCP].x;
-    const thumbSpreadDelta = Math.abs(thumbX - indexX);
-
-    const isThumbSpread = thumbSpreadDelta > this.THUMB_SPREAD_HORIZONTAL_THRESHOLD;
+    const thumbSpread = Math.abs(thumbTipX - indexFingerMcpX) > this.THUMB_SPREAD_HORIZONTAL_THRESHOLD;
     
-    const result = extendedFingersCount >= 3 && isThumbSpread;
-    console.log(`DEBUG_ALL_FINGERS: Condición de dedos extendidos y pulgar separado (resultado): ${result}`);
+    // const thumbExtendedRelativeToWrist = (
+    //     (landmarks[HandLandmark.WRIST].x < thumbCmcX && thumbCmcX < thumbTipX) || 
+    //     (landmarks[HandLandmark.WRIST].x > thumbCmcX && thumbCmcX > thumbTipX)    
+    // );
+
+    const extendedFingersCount = [indexExtended, middleExtended, ringExtended, pinkyExtended].filter(isExtended => isExtended).length;
+    // console.log(`DEBUG_ALL_FINGERS: Dedos (no pulgar) extendidos (cuenta): ${extendedFingersCount}`);
+    // console.log(`DEBUG_ALL_FINGERS: Pulgar separado: ${thumbSpread}`);
+    
+    const result = extendedFingersCount >= 3 && thumbSpread; 
+    if (!result) {
+        // console.log(`DEBUG_ALL_FINGERS: Condición de mano extendida NO cumplida. Dedos: ${extendedFingersCount}/4, Pulgar separado: ${thumbSpread}`);
+    } else {
+        // console.log(`DEBUG_ALL_FINGERS: Condición de mano extendida CUMPLIDA.`);
+    }
     return result;
   }
 
 
   detectGoodbyeWave(landmarks: any): boolean {
     if (!this.areAllFiveFingersExtended(landmarks)) { 
-      this.resetWaveDetection();
+      if (this.waveDirectionChanges > 0) {
+        console.log("DEBUG_WAVE: Mano no extendida, reseteando detección de ola en progreso.");
+        this.resetWaveDetection();
+      }
       return false;
     }
 
     const wristX = landmarks[HandLandmark.WRIST].x;
+
+    if (this.lastSignificantX === null) {
+        console.log("DEBUG_WAVE: Inicializando detección de ola (lastSignificantX era null).");
+        this.lastSignificantX = wristX;
+        this.wristXHistory = [wristX];
+        this.waveDirectionChanges = 0;
+        this.lastWaveDirection = 'NONE';
+        this.setWaveTimeout(); 
+        return false;
+    }
 
     this.wristXHistory.push(wristX);
     if (this.wristXHistory.length > this.WAVE_HISTORY_LENGTH) {
       this.wristXHistory.shift(); 
     }
     
+    if (this.wristXHistory.length < Math.min(5, this.WAVE_HISTORY_LENGTH)) { 
+        // console.log("DEBUG_WAVE: Acumulando historial de muñeca, frames:", this.wristXHistory.length);
+        this.setWaveTimeout(); 
+        return false;
+    }
+    
     const avgX = this.wristXHistory.reduce((acc, val) => acc + val, 0) / this.wristXHistory.length;
-    
-    if (this.wristXHistory.length < this.WAVE_HISTORY_LENGTH) {
-        return false;
-    }
-    
-    if (this.lastSignificantX === null) {
-        this.lastSignificantX = avgX;
-        return false;
-    }
-
     const movementDelta = avgX - this.lastSignificantX;
 
-    if (this.waveDetectionTimeout) {
-      clearTimeout(this.waveDetectionTimeout);
-    }
-    this.waveDetectionTimeout = setTimeout(() => {
-      console.log("DEBUG_WAVE: Timeout de ola, reseteando detección.");
-      this.resetWaveDetection();
-    }, this.WAVE_RESET_TIMEOUT_MS);
+    this.setWaveTimeout(); 
 
-    console.log(`DEBUG_WAVE: Muñeca X: ${wristX.toFixed(3)}, AvgX: ${avgX.toFixed(3)}, Delta: ${movementDelta.toFixed(3)}, Cambios: ${this.waveDirectionChanges}`);
+    // console.log(`DEBUG_WAVE: Muñeca X: ${wristX.toFixed(3)}, AvgX: ${avgX.toFixed(3)}, Delta: ${movementDelta.toFixed(3)}, Cambios: ${this.waveDirectionChanges}, Dirección Anterior: ${this.lastWaveDirection}`);
 
     if (Math.abs(movementDelta) > this.WAVE_X_THRESHOLD) {
       const currentDirection = movementDelta > 0 ? 'RIGHT' : 'LEFT';
+      // console.log(`DEBUG_WAVE: Movimiento significativo detectado. Dirección actual: ${currentDirection}`);
 
       if (this.lastWaveDirection !== 'NONE' && this.lastWaveDirection !== currentDirection) {
         this.waveDirectionChanges++;
-        console.log(`DEBUG_WAVE: *** Cambio de dirección detectado! Total cambios: ${this.waveDirectionChanges}`);
+        console.log(`DEBUG_WAVE: *** Cambio de dirección detectado! (${this.lastWaveDirection} -> ${currentDirection}). Total cambios: ${this.waveDirectionChanges}`);
+      } else if (this.lastWaveDirection === 'NONE') {
+        // console.log(`DEBUG_WAVE: Primer movimiento significativo en dirección: ${currentDirection}`);
       }
       
       this.lastWaveDirection = currentDirection;
       this.lastSignificantX = avgX; 
 
       if (this.waveDirectionChanges >= this.MIN_WAVES_DETECTED) {
-        console.log("DEBUG_WAVE: --- Umbral de cambios de dirección alcanzado, GESTO COMPLETADO! ---");
+        console.log("DEBUG_WAVE: --- Umbral de cambios de dirección alcanzado (" + this.waveDirectionChanges + "/" + this.MIN_WAVES_DETECTED + "), GESTO COMPLETADO! ---");
+        this.resetWaveDetection(); 
         return true;
       }
     }
     return false;
   }
 
+  setWaveTimeout() {
+    if (this.waveDetectionTimeout) {
+      clearTimeout(this.waveDetectionTimeout);
+    }
+    this.waveDetectionTimeout = setTimeout(() => {
+      if (this.waveDirectionChanges > 0 || this.gestureDetected === 'Adiós') { 
+        console.log("DEBUG_WAVE: Timeout de ola, reseteando detección. Cambios realizados:", this.waveDirectionChanges);
+      }
+      this.resetWaveDetection();
+    }, this.WAVE_RESET_TIMEOUT_MS);
+  }
+
   resetWaveDetection() {
-    console.log("DEBUG_RESET: Reseteando estado de detección de ola.");
+    // console.log("DEBUG_RESET: Reseteando estado de detección de ola.");
     this.wristXHistory = [];
     this.waveDirectionChanges = 0;
     this.lastWaveDirection = 'NONE';
@@ -239,87 +277,47 @@ export class QuizUnoPage implements OnInit, OnDestroy {
       clearTimeout(this.waveDetectionTimeout);
       this.waveDetectionTimeout = null;
     }
-    this.gestureDetected = '';
-    this.llmFeedback = '';
   }
   // --------------------------------------------------------------------
 
-  /**
-   * ✨ Genera retroalimentación para el gesto detectado usando la API de Gemini.
-   * @param gesture El nombre del gesto detectado (ej. 'Adiós').
-   */
   async generateGestureFeedback(gesture: string) {
-    this.isGeneratingFeedback = true;
-    this.llmFeedback = '';
-
-    try {
-      const prompt = `Genera un mensaje corto, alentador y divertido sobre el gesto de "${gesture}" que acaba de ser detectado. Debe sonar como si una IA amigable estuviera felicitando al usuario. Máximo 20 palabras.`;
-      
-      let chatHistory = [];
-      chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-
-      const payload = { contents: chatHistory };
-      const apiKey = "";
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      const result = await response.json();
-
-      if (result.candidates && result.candidates.length > 0 &&
-          result.candidates[0].content && result.candidates[0].content.parts &&
-          result.candidates[0].content.parts.length > 0) {
-        this.llmFeedback = result.candidates[0].content.parts[0].text;
-      } else {
-        this.llmFeedback = 'No pude generar una respuesta. Intenta de nuevo.';
-        console.error('Gemini API: Estructura de respuesta inesperada o contenido faltante.');
-      }
-    } catch (error) {
-      console.error('Error al llamar a la API de Gemini:', error);
-      this.llmFeedback = 'Hubo un error al conectar con la IA. ¡Sigue intentándolo!';
-    } finally {
-      this.isGeneratingFeedback = false;
-    }
+    this.llmFeedback = `¡Gesto de "${gesture}" detectado! ¡Buen trabajo!`;
+    console.log(`Feedback generado para: ${gesture}`);
   }
 
-  /**
-   * Completa el quiz (guarda su progreso como un subnivel normal).
-   */
   async submitQuiz() {
-    // Asegurarse de que subnivelId esté presente
     if (!this.currentUser || this.levelId === null || this.subnivelId === null || this.quizCompleted) {
+      console.log('SubmitQuiz: Condiciones no cumplidas para enviar.', 
+                  { userId: this.currentUser?.id, levelId: this.levelId, subnivelId: this.subnivelId, quizCompleted: this.quizCompleted });
       return;
     }
 
     const loading = await this.loadingController.create({
-      message: 'Guardando tu progreso del quiz...', // Mensaje actualizado
+      message: 'Guardando tu progreso del quiz...',
       spinner: 'crescent'
     });
     await loading.present();
 
     try {
-      this.currentScore = Math.floor(Math.random() * 100) + 1; // Genera un puntaje de ejemplo
+      this.currentScore = Math.floor(Math.random() * 31) + 70; // Puntaje entre 70 y 100
       this.quizCompleted = true;
 
-      // Actualiza el progreso del subnivel específico (este quiz)
+      console.log(`SubmitQuiz: Actualizando progreso para subnivel ${this.subnivelId}, usuario ${this.currentUser.id}, puntaje ${this.currentScore}`);
       await this.dataService.updateProgresoSubnivel(
         this.currentUser.id,
-        this.subnivelId, // Usamos el subnivelId específico de este quiz
+        this.subnivelId,
         true,
         this.currentScore
       );
       console.log(`Progreso del Subnivel ${this.subnivelId} para nivel ${this.levelId} actualizado.`);
 
       await this.presentAlert('¡Quiz Completado!', `¡Has completado este quiz! Tu puntaje: ${this.currentScore}.`);
-      this.router.navigate(['/level-detail', this.levelId]); // Vuelve a la página del nivel actual
+      this.router.navigate(['/level-detail', this.levelId]);
 
     } catch (error: any) {
       console.error('Error al completar quiz:', error);
       await this.presentAlert('Error', `No se pudo guardar tu progreso: ${error?.message || 'Error desconocido'}`);
+      this.quizCompleted = false; 
     } finally {
       loading.dismiss();
     }
