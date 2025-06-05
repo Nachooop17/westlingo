@@ -21,6 +21,14 @@ const HandLandmark = {
   PINKY_MCP: 17, PINKY_PIP: 18, PINKY_DIP: 19, PINKY_TIP: 20,
 };
 
+// Landmark de FaceMesh para la mejilla (ej. 234 es un punto en el pómulo/mejilla)
+// Otros podrían ser 130 (mejilla derecha), 359 (mejilla izquierda). Ajusta según necesidad.
+const FACE_MESH_TARGET_LANDMARK_INDEX = 234; // Cambiado a un nombre más genérico si se prefiere, o mantener CHEEK
+// Umbral de distancia para considerar el dedo "cerca" de la mejilla.
+// Si quieres que esté "pegado", este valor debe ser pequeño.
+// Si es similar a "cerca de la barbilla", podría ser similar al umbral que usabas antes (ej. 0.10 o 0.07)
+const NEAR_FACIAL_POINT_THRESHOLD = 0.07; // Ajusta este valor con pruebas
+
 @Component({
   selector: 'app-quiz-dos',
   templateUrl: './quiz-dos.page.html',
@@ -42,10 +50,10 @@ export class QuizDosPage implements OnInit, OnDestroy {
   quizCompleted: boolean = false;
 
   gestureDetected: string = '';
-  private readonly FINGER_EXTENSION_THRESHOLD = 0.05;
+  private readonly FINGER_EXTENSION_THRESHOLD = 0.05; // Umbral original para extensión de dedos
 
-  // Barbilla detectada por FaceMesh
-  private lastChin: {x: number, y: number} | null = null;
+  // Punto facial de referencia (mejilla en este caso) detectado por FaceMesh
+  private lastFacialReferencePoint: {x: number, y: number, z?: number} | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -82,7 +90,7 @@ export class QuizDosPage implements OnInit, OnDestroy {
     if (this.videoElement && this.videoElement.nativeElement) {
       this.gestureService.initialize(
         this.videoElement.nativeElement,
-        this.onResults.bind(this),
+        this.onHandResults.bind(this),
         this.onFaceResults.bind(this)
       );
     }
@@ -92,46 +100,55 @@ export class QuizDosPage implements OnInit, OnDestroy {
     this.gestureService.stop();
   }
 
-  // Callback de FaceMesh: guarda la barbilla
+  // Callback de FaceMesh: guarda el punto facial de referencia (mejilla)
   onFaceResults(results: any) {
-    if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-      const chin = results.multiFaceLandmarks[0][152]; // 152 = barbilla
-      this.lastChin = chin;
-      // console.log('Barbilla detectada:', chin);
-    } else {
-      this.lastChin = null;
-    }
+    this.ngZone.run(() => {
+        if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+            const faceLandmarks = results.multiFaceLandmarks[0];
+            const facialPoint = faceLandmarks[FACE_MESH_TARGET_LANDMARK_INDEX];
+            if (facialPoint) {
+                this.lastFacialReferencePoint = { x: facialPoint.x, y: facialPoint.y, z: facialPoint.z };
+                // console.log('Punto facial de referencia (mejilla) detectado:', this.lastFacialReferencePoint);
+            } else {
+                this.lastFacialReferencePoint = null;
+            }
+        } else {
+            this.lastFacialReferencePoint = null;
+        }
+    });
   }
 
   /**
-   * Procesa los resultados de MediaPipe Hands y detecta el gesto "¿quién?".
+   * Procesa los resultados de MediaPipe Hands y detecta el gesto.
    */
-  onResults(results: any) {
+  onHandResults(results: any) {
     this.ngZone.run(() => {
       if (!this.isHandPresent(results)) {
-        this.gestureDetected = '';
+        if (this.gestureDetected) this.gestureDetected = '';
         return;
       }
       const landmarks = results.multiHandLandmarks[0];
-      console.log('Mano detectada');
+      // console.log('Mano detectada');
 
       if (!this.isOnlyIndexFingerExtended(landmarks)) {
-        this.gestureDetected = '';
-        console.log('No hay solo un dedo (índice) extendido');
+        if (this.gestureDetected) this.gestureDetected = '';
+        // console.log('No hay solo un dedo (índice) extendido');
         return;
       }
-      console.log('Índice extendido y demás dedos doblados');
+      // console.log('Índice extendido y demás dedos doblados');
 
-      if (!this.isIndexNearChin(landmarks)) {
-        this.gestureDetected = '';
-        console.log('Índice no está cerca de la barbilla');
+      // Cambiado para verificar proximidad a la mejilla
+      if (!this.isIndexNearFacialReferencePoint(landmarks)) { // Nombre de función más genérico
+        if (this.gestureDetected) this.gestureDetected = '';
+        // console.log('Índice no está cerca del punto facial de referencia (mejilla)');
         return;
       }
-      console.log('Índice cerca de la barbilla');
+      // console.log('Índice cerca del punto facial de referencia (mejilla)');
 
-      if (this.gestureDetected !== '¿Quién?') {
-        this.gestureDetected = '¿Quién?';
-        console.log('QuizDosPage: GESTO DETECTADO: ¿Quién?');
+      const gestureName = '¿Quién? (en mejilla)'; // Mantener el nombre del gesto actualizado
+      if (this.gestureDetected !== gestureName) {
+        this.gestureDetected = gestureName;
+        console.log(`QuizDosPage: GESTO DETECTADO: ${gestureName}`);
         if (!this.quizCompleted) {
           this.submitQuiz();
         }
@@ -139,16 +156,10 @@ export class QuizDosPage implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Verifica si hay una mano detectada.
-   */
   isHandPresent(results: any): boolean {
     return results.multiHandLandmarks && results.multiHandLandmarks.length > 0;
   }
 
-  /**
-   * Verifica si solo el índice está extendido.
-   */
   isOnlyIndexFingerExtended(landmarks: any): boolean {
     const indexExtended = this.isFingerExtended(
       landmarks[HandLandmark.INDEX_FINGER_TIP],
@@ -170,48 +181,54 @@ export class QuizDosPage implements OnInit, OnDestroy {
       landmarks[HandLandmark.PINKY_MCP],
       'PINKY'
     );
-    const thumbBent = !this.isFingerExtended(
+    const thumbBent = !this.isFingerExtended( // Usando la lógica original para el pulgar
       landmarks[HandLandmark.THUMB_TIP],
-      landmarks[HandLandmark.THUMB_CMC],
+      landmarks[HandLandmark.THUMB_CMC], // O THUMB_MCP si es más apropiado para tu definición de "doblado"
       'THUMB'
     );
     return indexExtended && middleBent && ringBent && pinkyBent && thumbBent;
   }
 
   /**
-   * Verifica si el índice está cerca de la barbilla real (FaceMesh) o, si no hay barbilla, usa el método antiguo.
+   * Verifica si el índice está cerca del punto facial de referencia (mejilla).
+   * Similar a la lógica original de isIndexNearChin.
    */
-  isIndexNearChin(landmarks: any): boolean {
+  isIndexNearFacialReferencePoint(landmarks: any): boolean {
     const indexTip = landmarks[HandLandmark.INDEX_FINGER_TIP];
-    if (this.lastChin) {
-      // Validación real con barbilla
-      const dx = indexTip.x - this.lastChin.x;
-      const dy = indexTip.y - this.lastChin.y;
+    if (this.lastFacialReferencePoint) {
+      const dx = indexTip.x - this.lastFacialReferencePoint.x;
+      const dy = indexTip.y - this.lastFacialReferencePoint.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      // Ajusta el umbral según pruebas (0.07 es un buen inicio)
-      return distance < 0.10;
+      // console.log(`Distancia índice-punto facial: ${distance.toFixed(3)}`);
+      return distance < NEAR_FACIAL_POINT_THRESHOLD;
     } else {
-      // Fallback: método antiguo (por posición vertical)
-      const indexY = indexTip.y;
-      const barbillaYThreshold = 0.4;
-      return indexY < barbillaYThreshold;
+      // Si no hay punto facial de referencia, no se puede cumplir la condición.
+      // Podrías tener un fallback si lo deseas, como en tu isIndexNearChin original.
+      // Por ejemplo, si quieres permitirlo basado solo en la posición Y si la cara no se detecta:
+      // const indexY = indexTip.y;
+      // const mejillaYThreshold = 0.5; // Ajustar este valor si usas fallback
+      // return indexY < mejillaYThreshold; // Esto sería un fallback muy simple
+      return false; // Es más estricto requerir la detección del punto facial.
     }
   }
 
   /**
    * Utilidad para saber si un dedo está extendido.
+   * Revertido a la lógica que tenías en el ejemplo de quiz-dos para la barbilla.
    */
   isFingerExtended(tip: any, mcp: any, finger: string): boolean {
     if (finger === 'THUMB') {
+      // Lógica original para el pulgar de tu ejemplo de quiz-dos.page.ts (isIndexNearChin)
+      // Esto significaba que el pulgar estaba "extendido" si había una separación X.
+      // Por lo tanto, para "thumbBent = true", esta condición debe ser falsa.
       return Math.abs(tip.x - mcp.x) > this.FINGER_EXTENSION_THRESHOLD;
     } else {
+      // Lógica original para otros dedos
       return (mcp.y - tip.y) > this.FINGER_EXTENSION_THRESHOLD;
     }
   }
+// ...existing code...
 
-  /**
-   * Completa el quiz (solo guarda su progreso, NO desbloquea el siguiente nivel).
-   */
   async submitQuiz() {
     if (!this.currentUser || this.levelId === null || this.subnivelId === null || this.quizCompleted) {
       return;
@@ -233,10 +250,11 @@ export class QuizDosPage implements OnInit, OnDestroy {
         true,
         this.currentScore
       );
-      await this.presentAlert('¡Quizz Completado!', `¡Has completado este quiz! Tu puntaje: ${this.currentScore}.`);
+      await this.presentAlert('¡Quizz Completado!', `¡Has completado este quiz ("${this.gestureDetected}")! Tu puntaje: ${this.currentScore}.`);
       this.router.navigate(['/level-detail', this.levelId]);
     } catch (error: any) {
       await this.presentAlert('Error', `No se pudo guardar tu progreso: ${error?.message || 'Error desconocido'}`);
+      this.quizCompleted = false;
     } finally {
       loading.dismiss();
     }
