@@ -28,6 +28,15 @@
         <ion-card-subtitle class="ion-text-center">Tu Perfil</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
+        <div class="profile-avatar-container ion-text-center ion-margin-bottom">
+          <img *ngIf="avatarUrl; else noAvatar" [src]="avatarUrl" class="profile-avatar" alt="Foto de perfil" />
+          <ng-template #noAvatar>
+            <ion-icon name="person-circle-outline" class="profile-avatar-placeholder"></ion-icon>
+          </ng-template>
+          <ion-button size="small" color="secondary" class="ion-margin-top" (click)="changeProfilePhoto()">
+            Cambiar foto
+          </ion-button>
+        </div>
         <ion-item lines="none">
           <ion-icon name="mail-outline" slot="start" color="medium"></ion-icon>
           <ion-label>
@@ -107,6 +116,29 @@
   ion-item ion-icon {
     font-size: 1.5em;
     margin-right: 10px;
+  }
+
+  .profile-avatar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .profile-avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--ion-color-primary);
+    margin-bottom: 8px;
+    background: #fff;
+  }
+
+  .profile-avatar-placeholder {
+    font-size: 110px;
+    color: var(--ion-color-medium);
+    margin-bottom: 8px;
   }
 
   ion-button[color="danger"] {

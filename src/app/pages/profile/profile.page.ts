@@ -1,34 +1,29 @@
-// src/app/pages/profile/profile.page.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Para *ngIf y *ngFor
-import { Router, RouterModule } from '@angular/router'; // Para navegación y routerLink
-import { 
-  IonicModule, // Para componentes Ionic
-  AlertController, 
-  LoadingController, 
-  NavController 
-} from '@ionic/angular';
+import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
+import { IonicModule, AlertController, LoadingController, NavController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
-
-import { AuthService } from 'src/app/services/auth.service'; // Asegúrate de la ruta correcta
-import { DataService, Nivel } from 'src/app/services/data.service'; // Asegúrate de la ruta correcta
+import { AuthService } from 'src/app/services/auth.service';
+import { DataService, Nivel } from 'src/app/services/data.service';
 import { User } from '@supabase/supabase-js';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
-  standalone: true, // Componente autónomo
+  standalone: true,
   imports: [
-    CommonModule, // Necesario para directivas como *ngIf, *ngFor
-    RouterModule, // Necesario para routerLink
-    IonicModule // Importa todos los componentes Ionic
+    CommonModule,
+    RouterModule,
+    IonicModule
   ]
 })
 export class ProfilePage implements OnInit, OnDestroy {
   currentUser: User | null = null;
   userName: string = 'Cargando...';
   userEmail: string = 'Cargando...';
+  avatarUrl: string | null = null;
   completedLevels: Nivel[] = [];
   isLoading: boolean = true;
   errorMessage: string | null = null;
@@ -45,14 +40,14 @@ export class ProfilePage implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.userSubscription = this.authService.currentUser$.subscribe(user => {
+    this.userSubscription = this.authService.currentUser$.subscribe(async user => {
       if (user) {
         this.currentUser = user;
         this.userName = user.user_metadata?.['full_name'] || user.email || 'Usuario';
         this.userEmail = user.email || 'N/A';
-        this.loadUserData(user.id);
+        await this.loadUserData(user.id);
+        await this.loadProfileAvatar(user.id);
       } else {
-        console.log('ProfilePage: No hay usuario autenticado, redirigiendo a login...');
         this.router.navigate(['/login']);
       }
     });
@@ -68,13 +63,86 @@ export class ProfilePage implements OnInit, OnDestroy {
     try {
       const niveles = await this.dataService.getNivelesForUser(userId);
       this.completedLevels = niveles.filter(nivel => nivel.completado);
-      console.log('ProfilePage: Niveles completados cargados:', this.completedLevels);
     } catch (error: any) {
-      console.error('ProfilePage: Error al cargar datos del usuario o niveles:', error);
       this.errorMessage = `Error al cargar tu perfil: ${error.message || 'Error desconocido'}`;
     } finally {
       this.isLoading = false;
     }
+  }
+
+  async loadProfileAvatar(userId: string) {
+    // Supabase client desde AuthService
+    const supabase = this.authService.supabase;
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('id', userId)
+      .single();
+    if (data && data.avatar_url) {
+      this.avatarUrl = data.avatar_url;
+    } else {
+      this.avatarUrl = null;
+    }
+  }
+
+  // Utilidad para convertir base64 a Blob
+  base64toBlob(base64Data: string, contentType: string) {
+    const byteCharacters = atob(base64Data);
+    const byteArrays = [];
+    for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+      const slice = byteCharacters.slice(offset, offset + 512);
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      byteArrays.push(byteArray);
+    }
+    return new Blob(byteArrays, { type: contentType });
+  }
+
+  async changeProfilePhoto() {
+    if (!this.currentUser) return;
+    const image = await Camera.getPhoto({
+      quality: 80,
+      allowEditing: false,
+      resultType: CameraResultType.Base64,
+      source: CameraSource.Prompt
+    });
+
+    if (!image.base64String) return;
+
+    const supabase = this.authService.supabase;
+    const fileName = `${this.currentUser.id}_${Date.now()}.jpeg`; // No slash at start!
+
+    // Convierte base64 a Blob antes de subir
+    const imageBlob = this.base64toBlob(image.base64String, 'image/jpeg');
+
+    const { data, error } = await supabase
+      .storage
+      .from('avatars')
+      .upload(fileName, imageBlob, {
+        contentType: 'image/jpeg',
+        upsert: true
+      });
+
+    if (error) {
+      console.error('Supabase upload error:', error);
+      this.presentAlert('Error', `No se pudo subir la imagen: ${error.message || JSON.stringify(error)}`);
+      return;
+    }
+
+    const { publicUrl } = supabase
+      .storage
+      .from('avatars')
+      .getPublicUrl(fileName).data;
+
+    await supabase
+      .from('profiles')
+      .upsert({ id: this.currentUser.id, avatar_url: publicUrl });
+
+    this.avatarUrl = publicUrl;
+    this.presentAlert('¡Listo!', 'Tu foto de perfil ha sido actualizada.');
   }
 
   async signOut() {
@@ -85,14 +153,12 @@ export class ProfilePage implements OnInit, OnDestroy {
     await loading.present();
 
     try {
-      const { error } = await this.authService.signOutUser(); // Usar signOutUser
+      const { error } = await this.authService.signOutUser();
       if (error) {
         throw error;
       }
-      console.log('ProfilePage: Sesión cerrada con éxito.');
-      this.router.navigate(['/login'], { replaceUrl: true }); // Redirigir al login y limpiar historial
+      this.router.navigate(['/login'], { replaceUrl: true });
     } catch (error: any) {
-      console.error('ProfilePage: Error al cerrar sesión:', error);
       this.presentAlert('Error al cerrar sesión', error.message || 'Ocurrió un error inesperado.');
     } finally {
       loading.dismiss();

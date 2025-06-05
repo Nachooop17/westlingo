@@ -130,7 +130,7 @@ export class QuizDosPage implements OnInit, OnDestroy {
    */
   isIndexNearChin(landmarks: any): boolean {
     const indexY = landmarks[HandLandmark.INDEX_FINGER_TIP].y;
-    const barbillaYThreshold = 0.65;
+    const barbillaYThreshold = 0.4;
     return indexY < barbillaYThreshold;
   }
 
