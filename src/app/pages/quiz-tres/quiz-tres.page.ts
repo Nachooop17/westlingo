@@ -22,6 +22,13 @@ const HandLandmark = {
   PINKY_MCP: 17, PINKY_PIP: 18, PINKY_DIP: 19, PINKY_TIP: 20,
 };
 
+// Landmark de FaceMesh para la barbilla
+const FACE_MESH_CHIN_LANDMARK_INDEX = 152; 
+
+// Umbrales para la detección MUY simplificada de "DUDA" (solo posición del pulgar)
+const NEAR_CHIN_THRESHOLD_THUMB = 0.099; // Umbral de distancia para el pulgar cerca de la barbilla (ajustar)
+const THUMB_ABOVE_CHIN_OFFSET_Y = 0.01; // Para asegurar que el pulgar esté visiblemente arriba o a la altura de la barbilla (Y disminuye hacia arriba)
+
 @Component({
   selector: 'app-quiz-tres',
   templateUrl: './quiz-tres.page.html',
@@ -42,14 +49,10 @@ export class QuizTresPage implements OnInit, OnDestroy {
   currentScore: number = 0;
   quizCompleted: boolean = false;
 
-  // --- Propiedades para Detección de Gestos ---
   gestureDetected: string = '';
-  llmFeedback: string = ''; // Retroalimentación para el usuario
+  llmFeedback: string = ''; 
 
-  // Umbrales para la detección del estado de los dedos (ajustar según sea necesario)
-  private readonly UMBRAL_Y_DEDO = 0.03; // Para verificar si la punta está por encima/debajo de MCP/PIP
-  private readonly UMBRAL_Y_PULGAR = 0.02; 
-  private readonly UMBRAL_X_PULGAR_DESDE_INDICE_MCP = 0.05; // Distancia horizontal mínima desde el MCP del índice
+  private lastFacialReferencePoint: { x: number, y: number, z?: number } | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -88,11 +91,13 @@ export class QuizTresPage implements OnInit, OnDestroy {
       }
     });
 
-    console.log('QuizTresPage: Verificando videoElement:', this.videoElement);
     if (this.videoElement && this.videoElement.nativeElement) {
-      console.log('QuizTresPage: videoElement.nativeElement:', this.videoElement.nativeElement);
-      this.gestureService.initialize(this.videoElement.nativeElement, this.onResults.bind(this), () => {});
-      console.log('QuizTresPage: GestureService inicializado.');
+      this.gestureService.initialize(
+        this.videoElement.nativeElement,
+        this.onHandResults.bind(this),
+        this.onFaceResults.bind(this)
+      );
+      console.log('QuizTresPage: GestureService inicializado con detección de manos y cara.');
     } else {
       console.error('QuizTresPage: videoElement no está disponible en ngOnInit.');
     }
@@ -103,86 +108,98 @@ export class QuizTresPage implements OnInit, OnDestroy {
     this.gestureService.stop();
   }
 
-  onResults(results: any) {
+  onFaceResults(results: any) {
     this.ngZone.run(() => {
-      this.gestureDetected = ''; // Reiniciar en cada frame a menos que se detecte
-      this.llmFeedback = '';
-
-      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-        const landmarks = results.multiHandLandmarks[0]; // Usar la primera mano detectada
-
-        if (this.detectarGestoBebidaAlcoholica(landmarks)) {
-          if (this.gestureDetected !== 'Bebida Alcohólica') {
-            this.gestureDetected = 'Bebida Alcohólica';
-            console.log('QuizTresPage: GESTO DETECTADO: Bebida Alcohólica');
-            if (!this.quizCompleted) {
-              this.generarFeedbackGesto('Bebida Alcohólica');
-              this.submitQuiz();
-            }
-          }
+      if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+        const faceLandmarks = results.multiFaceLandmarks[0];
+        const chinPoint = faceLandmarks[FACE_MESH_CHIN_LANDMARK_INDEX];
+        if (chinPoint) {
+          this.lastFacialReferencePoint = { x: chinPoint.x, y: chinPoint.y, z: chinPoint.z };
+        } else {
+          this.lastFacialReferencePoint = null;
         }
+      } else {
+        this.lastFacialReferencePoint = null;
       }
     });
   }
 
-  // --- Métodos de detección del estado de los dedos ---
+  onHandResults(results: any) {
+    this.ngZone.run(() => {
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        const landmarks = results.multiHandLandmarks[0]; // Usar la primera mano detectada
+        // Ya no necesitamos 'handedness' para esta detección simplificada
 
-  private estaDedoExtendido(puntaY: number, refY: number, umbral: number = this.UMBRAL_Y_DEDO): boolean {
-    // El dedo está extendido si su punta está "por encima" (valor Y más pequeño) de su punto de referencia (MCP o IP)
-    return puntaY < refY - umbral;
+        if (this.detectarGestoDuda(landmarks, this.lastFacialReferencePoint)) {
+          const gestureName = 'DUDA';
+          if (this.gestureDetected !== gestureName) {
+            this.gestureDetected = gestureName;
+            console.log(`QuizTresPage: GESTO DETECTADO: ${gestureName}`);
+            if (!this.quizCompleted) {
+              this.generarFeedbackGesto(gestureName);
+              this.submitQuiz();
+            }
+          }
+        } else {
+          if (this.gestureDetected) {
+            this.gestureDetected = '';
+            this.llmFeedback = '';
+          }
+        }
+      } else {
+        if (this.gestureDetected) {
+          this.gestureDetected = '';
+          this.llmFeedback = '';
+        }
+      }
+    });
+  }
+  
+  private isPointNearFacialPoint(handPoint: any, facialPoint: {x: number, y: number, z?:number} | null, threshold: number): boolean {
+    if (facialPoint && handPoint) {
+      const dx = handPoint.x - facialPoint.x;
+      const dy = handPoint.y - facialPoint.y;
+      const distance = Math.sqrt(dx * dx + dy * dy); 
+      return distance < threshold;
+    }
+    return false;
   }
 
-  private estaDedoFlexionado(puntaY: number, refY: number, umbral: number = this.UMBRAL_Y_DEDO): boolean {
-    // El dedo está flexionado si su punta está "por debajo" (valor Y más grande) de su punto de referencia (MCP o IP)
-    return puntaY > refY + umbral;
-  }
+  detectarGestoDuda(landmarks: any, facialPoint: {x: number, y: number, z?:number} | null): boolean {
+    if (!landmarks || !facialPoint) {
+      console.log('DetectarDUDA (Simplificado): Faltan landmarks de mano o punto facial.');
+      return false;
+    }
 
-  // --- Detección del Gesto "Bebida Alcohólica" ---
-  detectarGestoBebidaAlcoholica(landmarks: any): boolean {
-    // Pulgar: Extendido (punta por encima de la articulación IP y separado horizontalmente)
-    const puntaPulgarY = landmarks[HandLandmark.THUMB_TIP].y;
-    const ipPulgarY = landmarks[HandLandmark.THUMB_IP].y;
-    const mcpPulgarX = landmarks[HandLandmark.THUMB_MCP].x;
-    const puntaPulgarX = landmarks[HandLandmark.THUMB_TIP].x;
-    const mcpIndiceX = landmarks[HandLandmark.INDEX_FINGER_MCP].x;
+    const thumbTip = landmarks[HandLandmark.THUMB_TIP];
 
-    const pulgarExtendidoVerticalmente = this.estaDedoExtendido(puntaPulgarY, ipPulgarY, this.UMBRAL_Y_PULGAR);
-    // Comprobar si el pulgar está al costado de la mano (ej. más alejado del MCP del índice que su propio MCP)
-    // Esta es una verificación de separación simplificada; ajustar si es necesario según la orientación de la mano.
-    const pulgarSeparadoHorizontalmente = Math.abs(puntaPulgarX - mcpIndiceX) > Math.abs(mcpPulgarX - mcpIndiceX) + this.UMBRAL_X_PULGAR_DESDE_INDICE_MCP;
-
-    const pulgarExtendido = pulgarExtendidoVerticalmente && pulgarSeparadoHorizontalmente;
-
-    // Meñique: Extendido (punta por encima de la articulación MCP)
-    const puntaMeniqueY = landmarks[HandLandmark.PINKY_TIP].y;
-    const mcpMeniqueY = landmarks[HandLandmark.PINKY_MCP].y;
-    const meniqueExtendido = this.estaDedoExtendido(puntaMeniqueY, mcpMeniqueY);
-
-    // Dedo Índice: Flexionado (punta por debajo de la articulación PIP)
-    const puntaIndiceY = landmarks[HandLandmark.INDEX_FINGER_TIP].y;
-    const pipIndiceY = landmarks[HandLandmark.INDEX_FINGER_PIP].y;
-    const indiceFlexionado = this.estaDedoFlexionado(puntaIndiceY, pipIndiceY);
-
-    // Dedo Medio: Flexionado (punta por debajo de la articulación PIP)
-    const puntaMedioY = landmarks[HandLandmark.MIDDLE_FINGER_TIP].y;
-    const pipMedioY = landmarks[HandLandmark.MIDDLE_FINGER_PIP].y;
-    const medioFlexionado = this.estaDedoFlexionado(puntaMedioY, pipMedioY);
-
-    // Dedo Anular: Flexionado (punta por debajo de la articulación PIP)
-    const puntaAnularY = landmarks[HandLandmark.RING_FINGER_TIP].y;
-    const pipAnularY = landmarks[HandLandmark.RING_FINGER_PIP].y;
-    const anularFlexionado = this.estaDedoFlexionado(puntaAnularY, pipAnularY);
+    console.log('--- Iniciando Detección DUDA (Simplificado) ---');
+    console.log(`FacialPoint (Barbilla ${FACE_MESH_CHIN_LANDMARK_INDEX}): x=${facialPoint.x.toFixed(3)}, y=${facialPoint.y.toFixed(3)}`);
+    console.log(`ThumbTip: x=${thumbTip.x.toFixed(3)}, y=${thumbTip.y.toFixed(3)}`);
     
-    // Logs de depuración (opcional, se pueden eliminar después de probar)
-    // console.log(`Pulgar: ExtV=${pulgarExtendidoVerticalmente}, ExtH=${pulgarSeparadoHorizontalmente} => ${pulgarExtendido}`);
-    // console.log(`Meñique: Ext=${meniqueExtendido}`);
-    // console.log(`Índice: Flex=${indiceFlexionado}, Medio: Flex=${medioFlexionado}, Anular: Flex=${anularFlexionado}`);
+    // 1. Pulgar cerca de la barbilla
+    const thumbNearChin = this.isPointNearFacialPoint(thumbTip, facialPoint, NEAR_CHIN_THRESHOLD_THUMB);
+    console.log(`Condición 1 (thumbNearChin): ${thumbNearChin}.`);
 
-    return pulgarExtendido && meniqueExtendido && indiceFlexionado && medioFlexionado && anularFlexionado;
+    // 2. Pulgar un poco arriba o a la altura de la barbilla
+    const targetThumbY = facialPoint.y - THUMB_ABOVE_CHIN_OFFSET_Y;
+    const thumbAboveOrAtChin = thumbTip.y < targetThumbY; 
+    console.log(`Condición 2 (thumbAboveOrAtChin): ${thumbAboveOrAtChin}. (thumbTip.y=${thumbTip.y.toFixed(3)} < targetThumbY=${targetThumbY.toFixed(3)})`);
+    
+    const result = thumbNearChin && thumbAboveOrAtChin;
+    if (result) {
+      console.log('¡¡¡ GESTO "DUDA" (Simplificado) DETECTADO !!!');
+    } else {
+      console.log('Gesto "DUDA" (Simplificado) NO detectado. Revisar condiciones individuales:');
+      if (!thumbNearChin) console.log("  Falla Condición 1: Pulgar no cerca de barbilla.");
+      if (!thumbAboveOrAtChin) console.log("  Falla Condición 2: Pulgar no arriba/altura de barbilla.");
+    }
+    console.log('--- Fin Detección DUDA (Simplificado) ---');
+    return result;
   }
 
   async generarFeedbackGesto(gesto: string) {
-    this.llmFeedback = `¡Gesto de "${gesto}" detectado! ¡Muy bien!`;
+    this.llmFeedback = `¡Gesto de "${gesto}" detectado! ¡Correcto!`;
     console.log(`Feedback generado para: ${gesto}`);
   }
 
@@ -212,7 +229,7 @@ export class QuizTresPage implements OnInit, OnDestroy {
       );
       console.log(`Progreso del Subnivel ${this.subnivelId} para nivel ${this.levelId} actualizado.`);
 
-      await this.presentAlert('¡Quiz Completado!', `¡Has completado este quiz! Tu puntaje: ${this.currentScore}.`);
+      await this.presentAlert('¡Quiz Completado!', `¡Has completado el quiz de "${this.gestureDetected}"! Tu puntaje: ${this.currentScore}.`);
       this.router.navigate(['/level-detail', this.levelId]); 
 
     } catch (error: any) {

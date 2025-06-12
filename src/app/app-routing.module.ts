@@ -57,9 +57,17 @@ const routes: Routes = [
     loadComponent: () => import('./pages/quiz-tres/quiz-tres.page').then(m => m.QuizTresPage)
   },
   {
+    // Ruta para el redirector del quiz final
+    path: 'quiz-final-redirector/:levelId/:subnivelId', // <--- AÑADE LOS PARÁMETROS AQUÍ
+    loadChildren: () => import('./pages/quiz-final-redirector/quiz-final-redirector.module').then( m => m.QuizFinalRedirectorPageModule)
+    // Asegúrate que el nombre del módulo (QuizFinalRedirectorPageModule) sea el correcto.
+    // Si generaste la página como "quiz-final-redirector", el módulo probablemente se llame así.
+  },
+  {
     path: '**',
     loadChildren: () => import('./pages/notfound/notfound.module').then( m => m.NotfoundPageModule)
   }
+  
   
 
   

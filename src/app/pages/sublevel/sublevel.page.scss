@@ -1,0 +1,222 @@
+/* Variables SCSS para fácil personalización */
+:root {
+  --ion-color-primary: #3880ff; // Azul vibrante para elementos principales
+  --ion-color-primary-rgb: 56, 128, 255;
+  --ion-color-secondary: #0cd1e8; // Cian para acentos
+  --ion-color-tertiary: #5260ff; // Púrpura suave
+  --ion-color-success: #2dd36f; // Verde para éxito
+  --ion-color-warning: #ffc409; // Amarillo para advertencia
+  --ion-color-danger: #eb445a; // Rojo para peligro/error
+  --ion-color-dark: #161e2b; // Tu color de fondo más oscuro para elementos
+  --ion-color-medium: #252530; // Tu color de fondo principal
+  --ion-color-light: #f4f5f8; // Un blanco suave para contrastes
+
+  --app-background-color: var(--ion-color-medium); // Fondo principal de la app
+  --card-background-color: var(--ion-color-dark); // Fondo de las tarjetas
+  --text-color-light: #ffffff; // Texto claro para fondos oscuros
+  --text-color-dark: #cccccc; // Texto gris claro para detalles
+  --border-color-subtle: rgba(255, 255, 255, 0.1); // Bordes discretos
+}
+
+ion-header {
+  ion-toolbar {
+    --background: var(--ion-color-primary); // Fondo primario para la barra superior
+    --color: var(--text-color-light); // Texto blanco en el encabezado
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); // Sombra sutil para darle elevación
+    --border-width: 0; // Eliminar borde predeterminado
+    --padding-start: 10px; // Espaciado a la izquierda
+    --padding-end: 10px; // Espaciado a la derecha
+
+    ion-button {
+      --color: var(--text-color-light); // Ícono de flecha blanco
+    }
+
+    ion-title {
+      font-weight: 600; // Título un poco más audaz
+      padding-inline-start: 10px; // Espacio entre el botón de retroceso y el título
+    }
+  }
+}
+
+ion-content {
+  background-color: var(--app-background-color); // Fondo principal de la aplicación
+  color: var(--text-color-light); // Color de texto por defecto en el contenido
+  padding: 16px; // Padding general para el contenido
+
+  // Centrado para elementos de estado (cargando, error)
+  .ion-text-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - var(--ion-safe-area-top) - var(--ion-safe-area-bottom) - 100px); // Ajusta la altura para centrar bien
+    padding: 20px;
+  }
+
+  // Estilos de carga
+  ion-spinner {
+    color: var(--ion-color-primary); // Spinner con el color primario
+    width: 48px; // Tamaño del spinner
+    height: 48px;
+    margin-bottom: 15px;
+  }
+
+  p {
+    color: var(--text-color-light); // Texto general
+    font-size: 1.05em; // Un poco más grande para legibilidad
+    line-height: 1.6; // Interlineado para mejor lectura
+  }
+
+  // Mensajes de error
+  .error-message {
+    background: var(--card-background-color);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); // Sombra más pronunciada para errores
+    margin: 20px auto;
+    max-width: 450px; // Limitar ancho para errores
+    width: 90%;
+
+    ion-icon {
+      font-size: 3.5em; // Ícono de error más grande
+      color: var(--ion-color-danger); // Color de peligro
+      margin-bottom: 15px;
+    }
+
+    p {
+      font-size: 1.1em;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+
+    ion-button {
+      --background: transparent; // Botón transparente
+      --color: var(--ion-color-primary); // Texto primario
+      --border-radius: 8px; // Bordes menos redondeados para un aspecto más moderno
+      --border-color: var(--ion-color-primary); // Borde del color primario
+      --border-width: 2px; // Borde más visible
+      --padding-start: 25px; // Padding horizontal
+      --padding-end: 25px;
+      height: 48px; // Altura fija para el botón
+      font-weight: 600;
+
+      &:hover {
+        --background: rgba(var(--ion-color-primary-rgb), 0.1); // Pequeño fondo al pasar el ratón
+      }
+    }
+  }
+
+  // Estilos para las tarjetas de contenido
+  ion-card {
+    background: var(--card-background-color);
+    border-radius: 16px; // Bordes más redondeados para un look suave
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); // Sombra más profunda para las tarjetas
+    margin: 25px auto; // Espaciado y centrado
+    max-width: 700px; // Ancho máximo
+    width: 95%; // Ancho responsivo
+    overflow: hidden; // Asegura que el contenido no se desborde
+
+    ion-card-header {
+      padding: 25px 25px 15px; // Más padding para la cabecera
+      background: rgba(var(--ion-color-primary-rgb), 0.05); // Un sutil fondo para el header de la tarjeta
+      border-bottom: 1px solid var(--border-color-subtle); // Separador en el header
+    }
+
+    ion-card-title {
+      color: var(--ion-color-primary);
+      font-size: 1.5em; // Título más grande
+      font-weight: 700; // Más audaz
+      margin-bottom: 0; // Eliminar margen inferior predeterminado
+    }
+
+    ion-card-content {
+      padding: 25px; // Padding interno de la tarjeta
+
+      img {
+        max-width: 100%;
+        height: auto; // Asegura la proporción
+        border-radius: 12px; // Bordes redondeados para las imágenes
+        margin-bottom: 25px; // Más espacio debajo de la imagen
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); // Sombra para imágenes
+      }
+
+      ion-list {
+        background: transparent; // Lista sin fondo
+        padding: 0; // Sin padding
+        margin: 0; // Sin margen
+
+        ion-item {
+          --background: rgba(255, 255, 255, 0.05); // Fondo sutil para cada opción
+          --border-color: transparent; // Sin borde en el item
+          --highlight-background: rgba(var(--ion-color-primary-rgb), 0.2); // Resaltado al tocar
+          border-radius: 10px; // Bordes redondeados para los items
+          margin-bottom: 12px; // Espacio entre opciones
+          min-height: 55px; // Altura mínima para cada item
+          transition: background-color 0.2s ease-in-out, transform 0.1s ease-out; // Transición suave
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+
+          &:active {
+            transform: translateY(1px); // Pequeño efecto de "pulsar"
+          }
+
+          ion-label {
+            color: var(--text-color-light); // Color de texto para las opciones
+            font-size: 1.1em;
+            padding: 10px 0; // Padding interno
+          }
+
+          &[disabled] {
+            opacity: 0.7; // Reducir opacidad cuando está deshabilitado
+            --background: rgba(255, 255, 255, 0.02); // Fondo más oscuro para deshabilitado
+            ion-label {
+              color: var(--text-color-dark); // Texto más claro para deshabilitado
+            }
+          }
+        }
+      }
+
+      .ion-text-success {
+        color: var(--ion-color-success); // Color de éxito
+        font-weight: 600;
+        font-size: 1.1em;
+        margin-top: 20px;
+        text-align: center; // Centrar mensaje de éxito
+        background: rgba(var(--ion-color-success-rgb), 0.1); // Fondo sutil de éxito
+        padding: 10px 15px;
+        border-radius: 8px;
+        border: 1px solid rgba(var(--ion-color-success-rgb), 0.3);
+      }
+
+      // Botón para marcar como leído/completado
+      ion-button[expand="block"] {
+        --background: var(--ion-color-primary);
+        --color: var(--text-color-light);
+        --border-radius: 10px; // Bordes redondeados
+        font-size: 1.1em;
+        height: 52px; // Altura cómoda para el botón
+        margin-top: 30px; // Más espacio superior
+        transition: background-color 0.3s ease;
+
+        &:hover {
+          --background: darken(var(--ion-color-primary), 8%);
+        }
+      }
+    }
+  }
+
+  // Estilos para contenido desconocido (para depuración)
+  pre {
+    background-color: var(--ion-color-dark); // Fondo oscuro para el JSON
+    color: var(--text-color-light);
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; // Fuente monoespaciada
+    white-space: pre-wrap; // Envuelve el texto
+    word-wrap: break-word; // Rompe palabras largas
+    font-size: 0.9em;
+  }
+}
