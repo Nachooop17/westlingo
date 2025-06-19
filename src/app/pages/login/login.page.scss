@@ -1,58 +1,69 @@
 ion-content {
-  display: flex;
-  justify-content: center; /* Centrar horizontalmente */
-  align-items: flex-start; /* Alinear al inicio (parte superior) */
-  min-height: 100vh; /* Asegúrate de que ocupe toda la altura */
-  background-color: #252530; /* Color de fondo suave */
+  --background: #1F2421;
+  color: #DCE1DE;
 }
 
 .form-container {
-  width: 90%; /* Ancho del formulario */
-  max-width: 400px; /* Máximo ancho para pantallas grandes */
-  margin-top: 80px; /* Espaciado superior para bajar el formulario */
-  margin-left: 20px;
-  margin-right: 20px;
-  background: #161e2b; /* Fondo blanco para el contenedor */
-  border-radius: 12px; /* Bordes redondeados */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra sutil para dar profundidad */
-  padding: 20px; /* Espaciado interno */
+  background: #232825;
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  margin: 2rem 0.5rem;
+  box-shadow: 0 2px 16px rgba(31,36,33,0.08);
 }
 
 .logo {
-  display: block; /* Para que ocupe todo el ancho disponible */
-  margin: 0 auto 20px; /* Centrar y añadir espaciado debajo del logo */
-  max-width: 80%; /* Asegúrate de que el logo no sea demasiado grande */
-  height: auto; /* Mantener la proporción */
-  border-radius: 50%; /* Hacer la imagen redondeada */
+  display: block;
+  margin: 0 auto 1.5rem auto;
+  max-width: 120px;
+  border-radius: 12px;
+  background: #DCE1DE;
+  padding: 0.5rem;
 }
 
 ion-item {
-  margin-bottom: 15px; /* Espaciado entre los elementos */
+  --background: #232825;
+  --color: #DCE1DE;
+  --highlight-color-focused: #49A078;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+ion-label {
+  color: #9CC5A1;
+}
+
+ion-input {
+  color: #DCE1DE;
 }
 
 ion-button {
-  background-color: #333; /* Gris oscuro para el botón */
-  color: #ffffff; /* Texto blanco */
-  border-radius: 20px; /* Bordes redondeados */
-  transition: background-color 0.3s; /* Transición suave */
+  --background: #216869;
+  --background-hover: #49A078;
+  --background-activated: #49A078;
+  --color: #DCE1DE;
+  margin-top: 1rem;
+  border-radius: 8px;
+  font-weight: bold;
+  letter-spacing: 1px;
 }
 
-ion-button:hover {
-  background-color: #555; /* Color más claro al pasar el ratón */
+ion-button[disabled] {
+  opacity: 0.6;
+  --background: #9CC5A1;
+  color: #232825;
 }
 
-.login-prompt {
-  margin-top: 20px; /* Espaciado superior */
-  font-size: 16px; /* Tamaño de fuente */
-  color: #ffffff; /* Color gris para el texto */
-  text-align: center; /* Centrar el texto */
+.ion-text-center {
+  color: #9CC5A1;
+  margin-top: 1rem;
 }
 
-.login-link {
-  color: #007bff; /* Color azul para el enlace */
-  text-decoration: underline; /* Subrayar el texto */
+a {
+  color: #49A078;
+  text-decoration: underline;
+  font-weight: 500;
 }
 
-.login-link:hover {
-  color: #0056b3; /* Color más oscuro al pasar el ratón */
+a:hover {
+  color: #216869;
 }

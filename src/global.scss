@@ -36,5 +36,22 @@
 @import "@ionic/angular/css/palettes/dark.class.css";
 @import "@ionic/angular/css/palettes/dark.system.css";
 
+ion-toolbar {
+  --background: #216869;
+  --color: #DCE1DE;
+}
+ion-menu {
+  --background: #232825;
+  color: #DCE1DE;
+}
 
+ion-menu ion-list {
+  background: transparent;
+}
+
+ion-menu ion-item {
+  --background: transparent;
+  --color: #DCE1DE;
+  border-radius: 8px;
+}
 

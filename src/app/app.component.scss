@@ -1,14 +1,74 @@
+ion-app {
+  font-family: 'Arial', sans-serif;
+}
 
-  .menu-title {
-    font-size: 24px;
-    font-weight: bold;
-  }
-  
-  .menu-item {
-    transition: background-color 0.2s;
-  
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.05);
-    }
-  }
-  
+ion-menu {
+  --background: #1F2421;
+  --color: #DCE1DE;
+}
+
+ion-header, ion-toolbar {
+  --background: #216869;
+  --color: #DCE1DE;
+  --border-color: transparent;
+}
+
+ion-title {
+  color: #DCE1DE;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+ion-content.menu-content {
+  --background: #1F2421;
+  color: #DCE1DE;
+}
+
+ion-list {
+  background: transparent;
+}
+
+ion-item {
+  --background: transparent;
+  --color: #DCE1DE;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  transition: background 0.2s;
+}
+
+ion-item[button]:not([disabled]):hover {
+  --background: #216869;
+  color: #DCE1DE;
+}
+
+ion-item.selected {
+  --background: #49A078;
+  color: #232825;
+}
+
+ion-icon {
+  color: #9CC5A1;
+}
+
+.menu-avatar {
+  background: #9CC5A1;
+  border-radius: 50%;
+  margin: 1.5rem auto 1rem auto;
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border: 3px solid #216869;
+}
+
+.menu-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #DCE1DE;
+  padding: 1rem;
+  text-align: center;
+}
+
+.menu-item {
+  transition: background-color 0.2s;
+}
