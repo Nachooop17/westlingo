@@ -64,15 +64,21 @@ const routes: Routes = [
     // Si generaste la página como "quiz-final-redirector", el módulo probablemente se llame así.
   },
   {
+    path: 'quiz-cuatro/:levelId/:subnivelId',
+    loadComponent: () => import('./pages/quiz-cuatro/quiz-cuatro.page').then(m => m.QuizCuatroPage)
+  },
+  {
+    path: 'quiz-cinco/:levelId/:subnivelId',
+    loadComponent: () => import('./pages/quiz-cinco/quiz-cinco.page').then(m => m.QuizCincoPage)
+  },
+  {
+    path: 'quiz-seis/:levelId/:subnivelId',
+    loadComponent: () => import('./pages/quiz-seis/quiz-seis.page').then(m => m.QuizSeisPage)
+  },
+  {
     path: '**',
     loadChildren: () => import('./pages/notfound/notfound.module').then( m => m.NotfoundPageModule)
   }
-  
-  
-
-  
-
-
   
 ];
 

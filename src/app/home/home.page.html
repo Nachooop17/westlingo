@@ -1,11 +1,13 @@
 <ion-header>
-  <ion-toolbar color="primary"> <ion-title>
+  <ion-toolbar color="primary">
+    <ion-title>
       Niveles Westlingo
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding"> <div *ngIf="isLoading" class="ion-text-center ion-padding">
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div *ngIf="isLoading" class="ion-text-center ion-padding">
     <ion-spinner name="crescent"></ion-spinner>
     <p>Cargando niveles...</p>
   </div>
@@ -16,17 +18,6 @@
         <ion-label class="ion-text-center">No hay niveles disponibles o no se pudieron cargar.</ion-label>
       </ion-item>
     </ng-container>
-    <!--
-      <ion-card *ngFor="let modulo of modulosLocales">
-        <ion-card-header>
-        <ion-card-title>{{ modulo.nombre }}</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-        <p>{{ modulo.descripcion }}</p>
-        <ion-button (click)="irAModuloLocal(modulo.ruta)">Ir al Módulo</ion-button>
-        </ion-card-content>
-      </ion-card>
-    -->
     <ng-container *ngIf="niveles && niveles.length > 0">
       <ion-list>
         <ion-item *ngFor="let nivel of niveles"
@@ -50,6 +41,13 @@
           <ion-icon *ngIf="nivel.acceso" name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
 
         </ion-item>
+
+        <ion-item lines="none" class="ion-text-center ion-padding-vertical">
+          <ion-label color="medium">
+            <h3>¡Más niveles pronto!</h3>
+          </ion-label>
+        </ion-item>
+        
       </ion-list>
 
       </ng-container>

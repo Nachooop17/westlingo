@@ -23,16 +23,7 @@
       <p *ngIf="!gestureDetected">Esperando gesto...</p>
     </div>
 
-    <ion-button 
-      *ngIf="!quizCompleted" 
-      expand="block" 
-      class="ion-margin-top" 
-      (click)="submitQuiz()" 
-      color="success"
-      [disabled]="!currentUser || levelId === null"
-    >
-      Completar Quiz Manualmente (Solo para pruebas)
-    </ion-button>
+  
 
     <div *ngIf="quizCompleted" class="ion-margin-top ion-text-center">
       <ion-icon name="checkmark-circle" color="success" style="font-size: 3em;"></ion-icon>
